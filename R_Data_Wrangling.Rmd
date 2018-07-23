@@ -1,0 +1,168 @@
+---
+title: "R - data wrangling"
+author: "J.J. van Nijnatten"
+output:
+  pdf_document: default
+  number_sections: yes
+  html_document: default
+  toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+\newpage
+\tableofcontents
+
+\newpage
+\section{Generate data}
+```{r, echo = TRUE}
+nrofsubs  = 4
+nrofconds = 3
+subj = rep(1:nrofsubs,nrofconds)
+time = rep(LETTERS[1:nrofconds],each=nrofsubs)
+score = as.vector( replicate( 
+          nrofconds , rnorm(n = nrofsubs, mean = sample(8,1)+10 , sd = sample(5,1) ) 
+        ) )
+data.long = data.frame(subj, time, score); 
+rm(list=setdiff(ls(), c("data.long", "nrofsubs","nrofconds")))
+```
+```{r, echo= FALSE}
+# transform data from long to wide format ---- 
+data.wide =   
+  reshape(data = data.long        # naam van de dataset
+          ,direction = 'wide'     # richting van de data-transformatie
+          ,v.names = 'score'      # kolomnaam met de meetwaarden
+          ,timevar = 'time'       # kolomnaam met de conditienamen
+          ,idvar = 'subj'         # kolomnaam met de ppn-nummers
+  )        
+names(data.wide)[2:4] = c('A','B','C') # pas de kolomnamen met scores aan
+
+
+# transform data from wide to long format ----
+data.long = 
+    reshape(data = data.wide      # naam van de dataset
+            ,direction = 'long'        # richting van de data-transformatie
+            ,varying = c('A','B','C')  # kolomnamen die worden samengevoegd
+            ,idvar = 'subj'            # kolomnaam met de ppn-nummers
+            ,v.names = "score"         # naam van nieuwe kolom met meetwaarden
+            ,timevar = "time"          # naam van nieuwe kolom met condities
+            ,times = c("A","B","C")    # waardes 
+            ,new.row.names = NULL
+    )
+
+
+print(data.long, digits = 3, print.gap = 5, row.names = FALSE)
+print(data.wide, digits = 3, print.gap = 5, row.names = FALSE)
+```
+
+\newpage
+\section{Data cleaning}
+```{r, echo=FALSE}
+messyData = data.long
+messyData[c(3,5),3] = NA
+messyData[9,3] = 90.35
+messyData[13,] = messyData[12,]
+rownames(messyData) = NULL
+print(messyData, digits = 3, print.gap = 5, row.names = FALSE)
+```
+\subsection{foutieve datapunten identificeren  ( missing data, extreme values, wrong data types)}
+
+\textbf{Missing Data} \newline
+De functie \textit{complete.cases()} geeft voor iedere rij uit de dataset aan of deze compleet is of niet (TRUE/FALSE). In combinatie met de functie \textit{which()} weet je welke rijnummers compleet zijn:
+```{r, echo=TRUE}
+complete.cases(messyData)
+which(complete.cases(messyData))
+```
+Andersom kun je met het symbool \textit{!} de selectie omdraaien en krijg je terug welke rijen incompleet zijn:
+```{r, echo=TRUE}
+which(!complete.cases(messyData))
+```
+
+\textbf{Dubbele data} \newline
+De functie \textit{duplicated()} controleert of er data dubbel voorkomt in het dataframe: \newline
+(Deze functie vergelijkt hele rijen met elkaar, dus niet of een waarde meerdere keren voorkomt binnen een kolom.)
+```{r, echo=TRUE}
+which(duplicated(messyData))
+```
+
+\textbf{Extreme of foutieve waardes} \newline
+
+
+\subsection{Verwijderen van foutieve datapunten}
+
+\subsection{Selecteren van correcte data (indexing)}
+\subsection{dubbele datainvoer}
+
+\subsection{Correcte data opslaan in nieuwe dataset}
+
+
+\newpage
+\section{Herstructurenen van data}
+In de praktijk van het wetenschappelijk onderzoek worden experimenten vaak uitgevoerd met andere apparatuur en computers dan waar je de uiteindelijke statistische analyse gaat uitvoeren. De data zoals die uit het experiment komen rollen zijn meestal niet geschikt om direct een statistische toets op uit te voeren. Het kan zijn dat de data eerst moet worden opgeschoond. Dat wil zeggen, je moet controleren of de gemeten waardes wel binnen een plausibel bereik vallen, dus geen onmogelijke of onwaarschijnlijke waardes bevatten. Het kan ook gebeuren dat een proefdier of proefpersoon niet altijd de taak uitvoert zoals bedoeld en er een deel van de data mist. Dan is het belangrijk in beeld te brengen hoe vaak en wanneer dat gebeurt, en deze metingen weg te laten uit de analyse, of eventueel zelf alle metingen van betreffende proefdier / -persoon weg te laten.
+
+Daarnaast werken sommige functies alleen correct wanneer de data van het juiste type zijn (bv. \textit{numeric, character, factor}) en dat kun je niet altijd duidelijk zien op het eerste oog (b.v.: een "5" kan door R als \textit{character} worden gezien, en niet als een nummer waar je mee kunt rekenen). Wat ook mis kan gaan is wanneer je condities of proefpersonen aanduid met nummers en R die getallen gebruikt om mee te rekenen i.p.v. deze te gebruiken om te weten bij welk proefobject  / welke conditie een meetwaarde hoort. Het beste is om categorische data aan te duiden met letters, dus "S1","S2", .. i.p.v. "1","2",.. om proefobjecten aan te duiden, of "Conditie 1", "conditie 2" i.p.v. "1","2" (nog beter is om informatieve namen te gebruiken zoals: "Control", "LowDose","HighDose"). 
+
+
+\subsection{datastructuren wide vs. long format}
+Wanneer je alle data hebt opgeschoond en gecontroleerd kan het nog zijn dat de dataset niet de juiste \textit{structuur} heeft.
+Met structuur bedoelen we hier hoe de onafhankelijk en afhankelijke variabelen en de subjectnummers etc. zijn ingedeeld. Er wordt een onderscheid gemaakt tussen het \textbf{LONG} en \textbf{WIDE} format. 
+
+\textbf{WIDE FORMAT}
+Wanneer een proefobject meermaals hebt gemeten en alle meetwaarden (afhankelijke variabelen) van de verschillende condities naast elkaar in aparte kolommen staan (dus 1 rij per proefobject) spreken we van een \textbf{WIDE} format zoals geillustreerd in Fig X.
+
+\textbf{LONG FORMAT}
+Bij dit format staan alle meetwaarden van de verschillende condities in dezelfde kolom, met daarnaast een kolom die aanduid bij welke conditie iedere meetwaarde hoort, en een kolom die aanduid van welk proefobject de meetwaarde afkomstig is zoals geillustreerd in Fig X. 
+
+\newpage
+\subsection{van wide naar long}
+
+Stel je hebt `r nrofsubs` proefobjecten gemeten in `r nrofconds` verschillende condities je data staan in het WIDE format:
+```{r, echo=FALSE}
+print(data.wide, digits = 3, print.gap = 5, row.names = FALSE)
+```
+Om de data te herstructureren naar het LONG format kun je de \textit{reshape()} functie alsvolgt gebruiken:
+```{r, echo= TRUE}
+# transform data from wide to long format ----
+data.long =                               
+    reshape(data        = data.wide       # naam van de oude   dataset in het WIDE format
+            ,direction  = 'long'          # richting van de data-transformatie
+            ,varying    = c('A','B','C')  # kolomnamen die worden samengevoegd
+            ,idvar      = 'subj'          # kolomnaam met de ppn-nummers
+            ,v.names    = 'score'         # naam van nieuwe kolom met meetwaarden
+            ,timevar    = 'time'          # naam van nieuwe kolom met condities
+            ,times      = c('A','B','C')  # waardes 
+    )
+```
+
+```{r, echo=FALSE}
+print(data.long, digits = 3, print.gap = 5, row.names = FALSE)
+```
+\newpage
+\subsection{van long naar wide}
+
+Stel je hebt `r nrofsubs` proefobjecten gemeten in `r nrofconds` verschillende condities je data staan in het LONG format:
+```{r, echo=FALSE}
+print(data.long, digits = 3, print.gap = 5, row.names = FALSE)
+```
+
+Om de data te herstructureren naar het WIDE format kun je de \textit{reshape()} functie alsvolgt gebruiken:
+
+```{r, echo= TRUE}
+# transform data from long to wide format ---- 
+data.wide =   
+reshape(data          = data.long      # naam van de dataset
+          ,direction  = 'wide'         # richting van de data-transformatie
+          ,v.names    = 'score'        # kolomnaam met de meetwaarden
+          ,timevar    = 'time'         # kolomnaam met de conditienamen
+          ,idvar      = 'subj'         # kolomnaam met de ppn-nummers
+  )        
+names(data.wide)[2:4] = c('A','B','C') # pas de kolomnamen met scores aan
+```
+```{r, echo=FALSE}
+print(data.wide, digits = 3, print.gap = 5, row.names = FALSE)
+```
+
+
