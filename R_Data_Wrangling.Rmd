@@ -2,7 +2,7 @@
 title: "R - data wrangling"
 author: "J.J. van Nijnatten"
 output:
-  pdf_document: default
+  pdf_document: default  
   number_sections: yes
   html_document: default
   toc: yes
@@ -13,7 +13,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-\newpage
 \tableofcontents
 
 \newpage
@@ -40,7 +39,6 @@ data.wide =
   )        
 names(data.wide)[2:4] = c('A','B','C') # pas de kolomnamen met scores aan
 
-
 # transform data from wide to long format ----
 data.long = 
     reshape(data = data.wide      # naam van de dataset
@@ -59,54 +57,114 @@ print(data.wide, digits = 3, print.gap = 5, row.names = FALSE)
 ```
 
 \newpage
-\section{Data cleaning}
+\section{Data inspecteren}
 ```{r, echo=FALSE}
-messyData = data.long
-messyData[c(3,5),3] = NA
-messyData[9,3] = 90.35
-messyData[13,] = messyData[12,]
-rownames(messyData) = NULL
-print(messyData, digits = 3, print.gap = 5, row.names = FALSE)
+badData = data.long
+badData[c(3,5),3] = NA
+badData[5,2] = NA
+badData[9,3] = 35.90
+badData[13,] = badData[12,]
+rownames(badData) = NULL
+print(badData, digits = 3, print.gap = 5, row.names = FALSE)
 ```
-\subsection{foutieve datapunten identificeren  ( missing data, extreme values, wrong data types)}
+\subsection{Foutieve data opsporen  ( missende data, extreme waardes, verkeerde data types)}
 
-\textbf{Missing Data} \newline
-De functie \textit{complete.cases()} geeft voor iedere rij uit de dataset aan of deze compleet is of niet (TRUE/FALSE). In combinatie met de functie \textit{which()} weet je welke rijnummers compleet zijn:
+\subsubsection{Missende data}
+De functie \textit{complete.cases()} geeft voor iedere rij uit de dataset aan of deze compleet is of niet (TRUE/FALSE). 
 ```{r, echo=TRUE}
-complete.cases(messyData)
-which(complete.cases(messyData))
+(complRows = complete.cases(badData))
+```
+
+In combinatie met de functie \textit{which()} weet je welke rijnummers compleet zijn:
+```{r} 
+which(complete.cases(badData)) 
 ```
 Andersom kun je met het symbool \textit{!} de selectie omdraaien en krijg je terug welke rijen incompleet zijn:
 ```{r, echo=TRUE}
-which(!complete.cases(messyData))
+(incomRows = which(!complete.cases(badData)))
+```
+Een andere optie is om specifiek te zoeken naar missende waardes. In R worden die weergegeven als \textit{NaN, NA} of \textit{NULL}. Hiervoor kun je de functies \textit{is.na(), is.nan(), is.null()} gebruiken. In dit geval zijn er missende waardes die als NA zijn weergegeven:
+```{r, echo=TRUE}
+(naRows = which(is.na(badData$score)))
 ```
 
-\textbf{Dubbele data} \newline
+
+\subsubsection{Dubbele data}
 De functie \textit{duplicated()} controleert of er data dubbel voorkomt in het dataframe: \newline
 (Deze functie vergelijkt hele rijen met elkaar, dus niet of een waarde meerdere keren voorkomt binnen een kolom.)
 ```{r, echo=TRUE}
-which(duplicated(messyData))
+(dupRows = which(duplicated(badData)))
 ```
 
-\textbf{Extreme of foutieve waardes} \newline
-
-
-\subsection{Verwijderen van foutieve datapunten}
-
-\subsection{Selecteren van correcte data (indexing)}
-\subsection{dubbele datainvoer}
-
-\subsection{Correcte data opslaan in nieuwe dataset}
-
+\subsubsection{Extreme of foutieve waardes}
+Soms komt het voor dat er foutieve waardes in je dataset terecht komen, of je wilt een subset van waardes selecteren om mee verder te werken. Stel dat in deze dataset alleen scores van 1 t/m 20 mogelijk zijn dan kan je alsvolgt controleren of er waardes zijn die daar buiten vallen en welke dat zijn:
+```{r}
+minScore = 1
+maxScore = 20
+(badData$score < minScore | badData$score > maxScore)
+(extremeRows = which((badData$score < minScore | badData$score > maxScore)))
+```
+Wederom kan je de functie \textit{which()} gebruiken om op te vragen welke waardes dat precies zijn. Merk op dat de NA waardes niet worden teruggegeven.
 
 \newpage
-\section{Herstructurenen van data}
+```{r, echo=FALSE}
+tempData = badData
+```
+\subsection{Data opschonen}
+Wanneer je foutieve waardes in je dataset hebt opgespoord kun je twee dingen doen:
+1) De proefobjecten met die foutieve waardes verwijderen uit je dataset, of 2) alleen de correcte data opslaan in een nieuwe dataset.
+\subsubsection{Verwijderen van foutieve datapunten}
+Als je weet welke rijen in je dataset waardes bevatten die je wilt verwijderen kan dat alsvolgt:
+```{r}
+naRows = which(is.na(badData$score)) # rij-nummers met incomplete data
+badData = badData[-naRows,] # selecteer alles behalve incomplete rijen
+```
+Let op! wanneer je de rijnummers bewaart met slechte data, zorg dan dat je alles in een keer verwijdert.
+Stel dat je eerst de incomplete rijen verwijdert, en daarna de extreme waardes zullen na de eerste keer verwijderen de rijnummers opschuiven en gooi je mogelijk de vereerde data weg.
+```{r, echo=FALSE}
+badData = tempData
+```
+
+Dus niet zo
+```{r}
+# BAD CODE !!
+badData = badData[-dupRows]
+badData = badData[-extremeRows,]
+badData = badData[-incomRows,]
+badData = badData[-naRows,] 
+# BAD CODE !!
+```
+```{r, echo=FALSE}
+print(badData   , digits = 3, print.gap = 5, row.names = FALSE)
+```
+
+maar zo
+```{r, echo=FALSE}
+badData = tempData
+```
+```{r}
+# maak verzameling met unieke rij-nummers met foute data.
+badRows = unique(c(incomRows, naRows, extremeRows, dupRows)) 
+# verwijder alle rijen in een keer om te voorkomen dat rijen opschuiven
+badData = badData[-badRows,]
+```
+```{r, echo=FALSE}
+print(badData   , digits = 3, print.gap = 5, row.names = FALSE)
+```
+Let hierbij op het min-teken (\textit{-}) wat aangeeft dat je alles behalve die data selecteert.
+
+\subsubsection{Selecteren van correcte data (indexing)}
+
+\subsubsection{Correcte data opslaan in nieuwe dataset}
+
+\newpage
+\section{Herstructureren van data}
 In de praktijk van het wetenschappelijk onderzoek worden experimenten vaak uitgevoerd met andere apparatuur en computers dan waar je de uiteindelijke statistische analyse gaat uitvoeren. De data zoals die uit het experiment komen rollen zijn meestal niet geschikt om direct een statistische toets op uit te voeren. Het kan zijn dat de data eerst moet worden opgeschoond. Dat wil zeggen, je moet controleren of de gemeten waardes wel binnen een plausibel bereik vallen, dus geen onmogelijke of onwaarschijnlijke waardes bevatten. Het kan ook gebeuren dat een proefdier of proefpersoon niet altijd de taak uitvoert zoals bedoeld en er een deel van de data mist. Dan is het belangrijk in beeld te brengen hoe vaak en wanneer dat gebeurt, en deze metingen weg te laten uit de analyse, of eventueel zelf alle metingen van betreffende proefdier / -persoon weg te laten.
 
 Daarnaast werken sommige functies alleen correct wanneer de data van het juiste type zijn (bv. \textit{numeric, character, factor}) en dat kun je niet altijd duidelijk zien op het eerste oog (b.v.: een "5" kan door R als \textit{character} worden gezien, en niet als een nummer waar je mee kunt rekenen). Wat ook mis kan gaan is wanneer je condities of proefpersonen aanduid met nummers en R die getallen gebruikt om mee te rekenen i.p.v. deze te gebruiken om te weten bij welk proefobject  / welke conditie een meetwaarde hoort. Het beste is om categorische data aan te duiden met letters, dus "S1","S2", .. i.p.v. "1","2",.. om proefobjecten aan te duiden, of "Conditie 1", "conditie 2" i.p.v. "1","2" (nog beter is om informatieve namen te gebruiken zoals: "Control", "LowDose","HighDose"). 
 
 
-\subsection{datastructuren wide vs. long format}
+\subsubsection{Datastructuren: wide vs. long format}
 Wanneer je alle data hebt opgeschoond en gecontroleerd kan het nog zijn dat de dataset niet de juiste \textit{structuur} heeft.
 Met structuur bedoelen we hier hoe de onafhankelijk en afhankelijke variabelen en de subjectnummers etc. zijn ingedeeld. Er wordt een onderscheid gemaakt tussen het \textbf{LONG} en \textbf{WIDE} format. 
 
@@ -117,7 +175,7 @@ Wanneer een proefobject meermaals hebt gemeten en alle meetwaarden (afhankelijke
 Bij dit format staan alle meetwaarden van de verschillende condities in dezelfde kolom, met daarnaast een kolom die aanduid bij welke conditie iedere meetwaarde hoort, en een kolom die aanduid van welk proefobject de meetwaarde afkomstig is zoals geillustreerd in Fig X. 
 
 \newpage
-\subsection{van wide naar long}
+\subsubsection{Van wide naar long}
 
 Stel je hebt `r nrofsubs` proefobjecten gemeten in `r nrofconds` verschillende condities je data staan in het WIDE format:
 ```{r, echo=FALSE}
@@ -141,7 +199,7 @@ data.long =
 print(data.long, digits = 3, print.gap = 5, row.names = FALSE)
 ```
 \newpage
-\subsection{van long naar wide}
+\subsubsection{Van long naar wide}
 
 Stel je hebt `r nrofsubs` proefobjecten gemeten in `r nrofconds` verschillende condities je data staan in het LONG format:
 ```{r, echo=FALSE}
