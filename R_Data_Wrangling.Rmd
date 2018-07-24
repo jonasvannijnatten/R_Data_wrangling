@@ -1,8 +1,8 @@
 ---
-title: "R - data wrangling"
+title: "R - data verwerking"
 author: "J.J. van Nijnatten"
 output:
-  pdf_document: default  
+  pdf_document: default
   number_sections: yes
   html_document: default
   toc: yes
@@ -17,7 +17,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 \newpage
 \section{Generate data}
-```{r, echo = TRUE}
+```{r, echo = FALSE}
+set.seed(06)
 nrofsubs  = 4
 nrofconds = 3
 subj = rep(1:nrofsubs,nrofconds)
@@ -28,7 +29,7 @@ score = as.vector( replicate(
 data.long = data.frame(subj, time, score); 
 rm(list=setdiff(ls(), c("data.long", "nrofsubs","nrofconds")))
 ```
-```{r, echo= FALSE}
+```{r, echo= FALSE, eval=TRUE}
 # transform data from long to wide format ---- 
 data.wide =   
   reshape(data = data.long        # naam van de dataset
@@ -52,46 +53,62 @@ data.long =
     )
 
 
-print(data.long, digits = 3, print.gap = 5, row.names = FALSE)
-print(data.wide, digits = 3, print.gap = 5, row.names = FALSE)
+#print(data.long, digits = 3, print.gap = 5, row.names = FALSE)
+#print(data.wide, digits = 3, print.gap = 5, row.names = FALSE)
 ```
 
 \newpage
 \section{Data inspecteren}
-```{r, echo=FALSE}
+In dit deel wordt onderstaande dataset, genaamd *badData* gebruikt om voorbeelden te geven.  
+<details><summary>Code om *badData* te genereren </summary>
+```{r, echo=TRUE}
 badData = data.long
-badData[c(3,5),3] = NA
-badData[5,2] = NA
+badData[c(4,7),3] = NA
+badData[4,2] = NA
 badData[9,3] = 35.90
 badData[13,] = badData[12,]
 rownames(badData) = NULL
+```
+</details>
+```{r, echo=FALSE}
 print(badData, digits = 3, print.gap = 5, row.names = FALSE)
 ```
-\subsection{Foutieve data opsporen  ( missende data, extreme waardes, verkeerde data types)}
+\subsection{Foutieve data opsporen}
+Er bestaan vele manieren om ontbrekende en foutieve data op te sporen in je dataset. In deze handleiding zullen we het gebruik van de  volgende functies bespreken:
+```{r, eval=FALSE}
+is.na()
+is.nan()
+is.null()
+duplicated()
+complete.cases()
+```
 
-\subsubsection{Missende data}
-De functie \textit{complete.cases()} geeft voor iedere rij uit de dataset aan of deze compleet is of niet (TRUE/FALSE). 
+
+\subsubsection{Ontbrekende data}
+In R worden ontbrekende waardes weergegeven als *NaN* (Not A Number), *NA* (Not Available) of *NULL*. Om deze op te sporen kun je de functies *is.na(), is.nan(), is.null()* gebruiken. In dit voorbeeld staan er missende waardes als NA in de dataset:
+```{r, echo=TRUE}
+(naRows = which(is.na  (badData$score)))
+```
+In rij `r naRows` ontbreken dus meetwaardes in de kolom *score*.
+
+Een andere optie is om specifiek te zoeken naar proefobjecten waarvan de gegevens (in)compleet zijn.
+De functie *complete.cases()* geeft voor iedere rij uit de dataset aan of deze compleet is of niet (TRUE/FALSE). Een 'case' wordt alleen als compleet beschouwd wanneer er in alle kolommen waardes staan.
 ```{r, echo=TRUE}
 (complRows = complete.cases(badData))
 ```
 
-In combinatie met de functie \textit{which()} weet je welke rijnummers compleet zijn:
+In combinatie met de functie *which()* weet je welke rijnummers compleet zijn:
 ```{r} 
 which(complete.cases(badData)) 
 ```
-Andersom kun je met het symbool \textit{!} de selectie omdraaien en krijg je terug welke rijen incompleet zijn:
+Andersom kun je met het symbool *!* de selectie omdraaien en krijg je terug welke rijen incompleet zijn:
 ```{r, echo=TRUE}
 (incomRows = which(!complete.cases(badData)))
 ```
-Een andere optie is om specifiek te zoeken naar missende waardes. In R worden die weergegeven als \textit{NaN, NA} of \textit{NULL}. Hiervoor kun je de functies \textit{is.na(), is.nan(), is.null()} gebruiken. In dit geval zijn er missende waardes die als NA zijn weergegeven:
-```{r, echo=TRUE}
-(naRows = which(is.na(badData$score)))
-```
 
-
-\subsubsection{Dubbele data}
-De functie \textit{duplicated()} controleert of er data dubbel voorkomt in het dataframe: \newline
-(Deze functie vergelijkt hele rijen met elkaar, dus niet of een waarde meerdere keren voorkomt binnen een kolom.)
+\subsubsection{Dubbel ingevoerde data}
+*duplicated()*  
+Deze functie  controleert of er data dubbel voorkomt in het dataframe. Deze functie vergelijkt hele rijen met elkaar, dus niet of een waarde meerdere keren voorkomt binnen een kolom.
 ```{r, echo=TRUE}
 (dupRows = which(duplicated(badData)))
 ```
@@ -102,25 +119,58 @@ Soms komt het voor dat er foutieve waardes in je dataset terecht komen, of je wi
 minScore = 1
 maxScore = 20
 (badData$score < minScore | badData$score > maxScore)
+```
+Wederom kan je de functie *which()* gebruiken om op te vragen welke waardes dat precies zijn. Merk op dat de NA waardes niet worden genegeerd.
+```{r}
 (extremeRows = which((badData$score < minScore | badData$score > maxScore)))
 ```
-Wederom kan je de functie \textit{which()} gebruiken om op te vragen welke waardes dat precies zijn. Merk op dat de NA waardes niet worden teruggegeven.
+
+\newpage
+\subsection{Data types controleren}
+R ken verschillende soorten data types zoals o.a. *numeric* (numerieke waardes) *character* (tekst), *logical* (TRUE / FALSE) en *factor* (categorische waardes). Als de data niet als het juiste type is opgeslagen in R zullen de functies een error geven, of (nog gevaarlijker) een verkeerde output geven. Raadpleeg altijd de *help*-files van de functies voor welk data type ze als input verwachten.  
+    
+Functies om het datateyp te **controleren**:  
+\textit{
+is.numeric() \newline
+is.character() \newline
+is.logical() \newline
+is.factor() \newline
+}  
+Functies om het data type te **veranderen**:  
+\textit{
+as.numeric() \newline
+as.character() \newline
+as.logical() \newline
+as.factor() \newline
+}
+
+Voorbeeld:
+```{r, eval=FALSE}
+numbers = c("1","2","3","4")    # variabele met getallen 1 t/m 4
+is.numeric(numbers)             # FALSE: variabele is niet numeriek
+is.character(numbers)           # TRUE:  variabele is tekst
+numbers = as.numeric(numbers)   # verandert variabele van tekst naar numeriek
+is.numeric(numbers)             # TRUE: variabele is numeriek
+
+```
+In bovenstaand voorbeeld wordt een variabele aangemaakt met getallen, maar omdat ze tussen aanhalingstekens staan wordt het door R gezien als tekst i.p.v. numerieke waardes. Met de functie *as.numeric()* wordt de tekst omgeschreven naar numerieke waardes.
+
 
 \newpage
 ```{r, echo=FALSE}
 tempData = badData
 ```
-\subsection{Data opschonen}
+\section{Data opschonen}
 Wanneer je foutieve waardes in je dataset hebt opgespoord kun je twee dingen doen:
 1) De proefobjecten met die foutieve waardes verwijderen uit je dataset, of 2) alleen de correcte data opslaan in een nieuwe dataset.
-\subsubsection{Verwijderen van foutieve datapunten}
+\subsection{Verwijderen van foutieve datapunten}
 Als je weet welke rijen in je dataset waardes bevatten die je wilt verwijderen kan dat alsvolgt:
 ```{r}
 naRows = which(is.na(badData$score)) # rij-nummers met incomplete data
 badData = badData[-naRows,] # selecteer alles behalve incomplete rijen
 ```
 Let op! wanneer je de rijnummers bewaart met slechte data, zorg dan dat je alles in een keer verwijdert.
-Stel dat je eerst de incomplete rijen verwijdert, en daarna de extreme waardes zullen na de eerste keer verwijderen de rijnummers opschuiven en gooi je mogelijk de vereerde data weg.
+Stel dat je eerst de incomplete rijen verwijdert, en daarna de extreme waardes, dan zullen na de eerste keer verwijderen de rijnummers opschuiven en gooi je bij de volgende stap mogelijk de vereerde data weg.
 ```{r, echo=FALSE}
 badData = tempData
 ```
@@ -151,25 +201,25 @@ badData = badData[-badRows,]
 ```{r, echo=FALSE}
 print(badData   , digits = 3, print.gap = 5, row.names = FALSE)
 ```
-Let hierbij op het min-teken (\textit{-}) wat aangeeft dat je alles behalve die data selecteert.
+Let hierbij op het min-teken (*-}) wat aangeeft dat je alles behalve die data selecteert.
 
-\subsubsection{Selecteren van correcte data (indexing)}
+\subsection{Selecteren van correcte data (indexing)}
 
-\subsubsection{Correcte data opslaan in nieuwe dataset}
+\subsection{Correcte data opslaan in nieuwe dataset}
 
 \newpage
 \section{Herstructureren van data}
-In de praktijk van het wetenschappelijk onderzoek worden experimenten vaak uitgevoerd met andere apparatuur en computers dan waar je de uiteindelijke statistische analyse gaat uitvoeren. De data zoals die uit het experiment komen rollen zijn meestal niet geschikt om direct een statistische toets op uit te voeren. Het kan zijn dat de data eerst moet worden opgeschoond. Dat wil zeggen, je moet controleren of de gemeten waardes wel binnen een plausibel bereik vallen, dus geen onmogelijke of onwaarschijnlijke waardes bevatten. Het kan ook gebeuren dat een proefdier of proefpersoon niet altijd de taak uitvoert zoals bedoeld en er een deel van de data mist. Dan is het belangrijk in beeld te brengen hoe vaak en wanneer dat gebeurt, en deze metingen weg te laten uit de analyse, of eventueel zelf alle metingen van betreffende proefdier / -persoon weg te laten.
+In de praktijk van het wetenschappelijk onderzoek worden experimenten vaak uitgevoerd met andere apparatuur en computers dan waar je de uiteindelijke statistische analyse gaat uitvoeren. De data zoals die uit het experiment komen rollen zijn meestal niet geschikt om direct een statistische toets op uit te voeren. Het kan zijn dat de data eerst moet worden opgeschoond. Dat wil zeggen, je moet controleren of de gemeten waardes wel binnen een plausibel bereik vallen, dus geen onmogelijke of onwaarschijnlijke waardes bevatten. Het kan ook gebeuren dat een proefdier of proefpersoon niet altijd de taak uitvoert zoals bedoeld en er een deel van de data ontbreekt. Dan is het belangrijk in beeld te brengen hoe vaak en wanneer dat gebeurt, en deze metingen weg te laten uit de analyse, of eventueel zelf alle metingen van betreffende proefdier / -persoon weg te laten.
 
-Daarnaast werken sommige functies alleen correct wanneer de data van het juiste type zijn (bv. \textit{numeric, character, factor}) en dat kun je niet altijd duidelijk zien op het eerste oog (b.v.: een "5" kan door R als \textit{character} worden gezien, en niet als een nummer waar je mee kunt rekenen). Wat ook mis kan gaan is wanneer je condities of proefpersonen aanduid met nummers en R die getallen gebruikt om mee te rekenen i.p.v. deze te gebruiken om te weten bij welk proefobject  / welke conditie een meetwaarde hoort. Het beste is om categorische data aan te duiden met letters, dus "S1","S2", .. i.p.v. "1","2",.. om proefobjecten aan te duiden, of "Conditie 1", "conditie 2" i.p.v. "1","2" (nog beter is om informatieve namen te gebruiken zoals: "Control", "LowDose","HighDose"). 
+Daarnaast werken sommige functies alleen correct wanneer de data van het juiste type zijn (bv. *numeric, character, factor*) en dat kun je niet altijd duidelijk zien op het eerste oog (b.v.: een "5" kan door R als *character*worden gezien, en niet als een nummer waar je mee kunt rekenen). Wat ook mis kan gaan is wanneer je condities of proefpersonen aanduidt met nummers en R die getallen gebruikt om mee te rekenen i.p.v. deze te gebruiken om te weten bij welk proefobject  / welke conditie een meetwaarde hoort. Het beste is om categorische data aan te duiden met letters. Gebruik bijvoorbeeld "S1","S2", .. i.p.v. "1","2",.. om proefobjecten aan te duiden, of "Conditie 1", "Conditie 2" i.p.v. "1","2" (nog beter is om informatieve namen te gebruiken zoals: "Control", "LowDose","HighDose"). 
 
 
 \subsubsection{Datastructuren: wide vs. long format}
-Wanneer je alle data hebt opgeschoond en gecontroleerd kan het nog zijn dat de dataset niet de juiste \textit{structuur} heeft.
-Met structuur bedoelen we hier hoe de onafhankelijk en afhankelijke variabelen en de subjectnummers etc. zijn ingedeeld. Er wordt een onderscheid gemaakt tussen het \textbf{LONG} en \textbf{WIDE} format. 
+Wanneer je alle data hebt opgeschoond en gecontroleerd kan het nog zijn dat de dataset niet de juiste *structuur* heeft.
+Met structuur bedoelen we hier hoe de onafhankelijk en afhankelijke variabelen en de subjectnummers etc. zijn ingedeeld. Er wordt een onderscheid gemaakt tussen het **LONG** en **WIDE** format. 
 
 \textbf{WIDE FORMAT}
-Wanneer een proefobject meermaals hebt gemeten en alle meetwaarden (afhankelijke variabelen) van de verschillende condities naast elkaar in aparte kolommen staan (dus 1 rij per proefobject) spreken we van een \textbf{WIDE} format zoals geillustreerd in Fig X.
+Wanneer een proefobject meermaals hebt gemeten en alle meetwaarden (afhankelijke variabelen) van de verschillende condities naast elkaar in aparte kolommen staan (dus 1 rij per proefobject) spreken we van een **WIDE** format zoals geillustreerd in Fig X.
 
 \textbf{LONG FORMAT}
 Bij dit format staan alle meetwaarden van de verschillende condities in dezelfde kolom, met daarnaast een kolom die aanduid bij welke conditie iedere meetwaarde hoort, en een kolom die aanduid van welk proefobject de meetwaarde afkomstig is zoals geillustreerd in Fig X. 
@@ -181,7 +231,7 @@ Stel je hebt `r nrofsubs` proefobjecten gemeten in `r nrofconds` verschillende c
 ```{r, echo=FALSE}
 print(data.wide, digits = 3, print.gap = 5, row.names = FALSE)
 ```
-Om de data te herstructureren naar het LONG format kun je de \textit{reshape()} functie alsvolgt gebruiken:
+Om de data te herstructureren naar het LONG format kun je de *reshape()* functie alsvolgt gebruiken:
 ```{r, echo= TRUE}
 # transform data from wide to long format ----
 data.long =                               
@@ -206,7 +256,7 @@ Stel je hebt `r nrofsubs` proefobjecten gemeten in `r nrofconds` verschillende c
 print(data.long, digits = 3, print.gap = 5, row.names = FALSE)
 ```
 
-Om de data te herstructureren naar het WIDE format kun je de \textit{reshape()} functie alsvolgt gebruiken:
+Om de data te herstructureren naar het WIDE format kun je de *reshape()* functie alsvolgt gebruiken:
 
 ```{r, echo= TRUE}
 # transform data from long to wide format ---- 
