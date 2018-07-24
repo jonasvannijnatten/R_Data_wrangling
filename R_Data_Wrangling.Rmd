@@ -97,12 +97,12 @@ is.na(badData)
 is.na(badData)
 ```
 </details>
-.. en dit geeft voor ieder element uit de dataset aan of het een *NA* is of niet met een waarde van TRUE / FALSE.   </p> 
+.. en dit geeft voor ieder element uit de dataset aan of het een ontbrekende waarde is of niet met een waarde van TRUE / FALSE.   </p> 
 In combinatie met de functie *which()* krijgen we het volgende resultaat:
 ```{r}
 (naRows = which(is.na(badData)))
 ```
-
+Dit zijn dus de positienummers van de elementen in de dataset, geteld van linksboven.
 ```{r, echo=TRUE}
 (naRows = which(is.na  (badData$score)))
 ```

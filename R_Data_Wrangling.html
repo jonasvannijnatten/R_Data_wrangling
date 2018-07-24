@@ -189,11 +189,12 @@ Om de ontbrekende waardes in de dataset te vinden gebruiken we ..</p>
 ## [11,] FALSE FALSE FALSE
 ## [12,] FALSE FALSE FALSE
 ## [13,] FALSE FALSE FALSE</code></pre>
-</details> .. en dit geeft voor ieder element uit de dataset aan of het een <em>NA</em> is of niet met een waarde van TRUE / FALSE.
+</details> .. en dit geeft voor ieder element uit de dataset aan of het een ontbrekende waarde is of niet met een waarde van TRUE / FALSE.
 </p>
 <p>In combinatie met de functie <em>which()</em> krijgen we het volgende resultaat:</p>
 <pre class="r"><code>(naRows = which(is.na(badData)))</code></pre>
 <pre><code>## [1] 17 28 30 33</code></pre>
+<p>Dit zijn dus de positienummers van de elementen in de dataset, geteld van linksboven.</p>
 <pre class="r"><code>(naRows = which(is.na  (badData$score)))</code></pre>
 <pre><code>## [1] 2 4 7</code></pre>
 <p>In rij 2, 4, 7 ontbreken dus meetwaardes in de kolom <em>score</em>.</p>
