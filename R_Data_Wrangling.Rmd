@@ -2,9 +2,9 @@
 title: "R - data verwerking"
 author: "J.J. van Nijnatten"
 output:
-  pdf_document: default
-  number_sections: yes
   html_document: default
+  number_sections: yes
+  pdf_document: default
   toc: yes
 ---
 
@@ -58,34 +58,51 @@ data.long =
 ```
 
 \newpage
-\section{Data inspecteren}
+\section{Data inspecteren} <h3> Data inspecteren </h3>
 In dit deel wordt onderstaande dataset, genaamd *badData* gebruikt om voorbeelden te geven.  
 <details><summary>Code om *badData* te genereren </summary>
 ```{r, echo=TRUE}
 badData = data.long
 badData[c(4,7),3] = NA
 badData[4,2] = NA
+badData[2,3] = NaN
 badData[9,3] = 35.90
 badData[13,] = badData[12,]
 rownames(badData) = NULL
 ```
 </details>
 ```{r, echo=FALSE}
-print(badData, digits = 3, print.gap = 5, row.names = FALSE)
+print(badData, digits = 3, print.gap = 5, row.names = TRUE)
 ```
-\subsection{Foutieve data opsporen}
-Er bestaan vele manieren om ontbrekende en foutieve data op te sporen in je dataset. In deze handleiding zullen we het gebruik van de  volgende functies bespreken:
+\subsection{Foutieve data opsporen} <h2> Foutieve data opsporen </h2>
+Er bestaan vele manieren om ontbrekende en foutieve data op te sporen in je dataset. In deze handleiding bespreken we het gebruik van de  volgende functies:
 ```{r, eval=FALSE}
+Which()
 is.na()
-is.nan()
-is.null()
 duplicated()
 complete.cases()
 ```
+De functie *which()* wordt gebruikt in combinatie met de andere functies om de positie op te vragen waar bepaalde waardes zich bevinden i.p.v. de waardes zelf.
 
+\subsubsection{Ontbrekende data} <h4> Ontbrekende data </h4>
+<p>
+In R worden ontbrekende waardes weergegeven als *NaN* (Not A Number) of *NA* (Not Available). Om deze op te sporen kun je de functies *is.na()* en *is.nan()* gebruiken.  
+Om de ontbrekende waardes in de dataset te vinden gebruiken we ..
+```{r, eval=FALSE}
+is.na(badData)
+```
+<details><summary>show output</summary>
 
-\subsubsection{Ontbrekende data}
-In R worden ontbrekende waardes weergegeven als *NaN* (Not A Number), *NA* (Not Available) of *NULL*. Om deze op te sporen kun je de functies *is.na(), is.nan(), is.null()* gebruiken. In dit voorbeeld staan er missende waardes als NA in de dataset:
+```{r, echo=FALSE, eval=TRUE}
+is.na(badData)
+```
+</details>
+.. en dit geeft voor ieder element uit de dataset aan of het een *NA* is of niet met een waarde van TRUE / FALSE.   </p> 
+In combinatie met de functie *which()* krijgen we het volgende resultaat:
+```{r}
+(naRows = which(is.na(badData)))
+```
+
 ```{r, echo=TRUE}
 (naRows = which(is.na  (badData$score)))
 ```
@@ -106,14 +123,14 @@ Andersom kun je met het symbool *!* de selectie omdraaien en krijg je terug welk
 (incomRows = which(!complete.cases(badData)))
 ```
 
-\subsubsection{Dubbel ingevoerde data}
+\subsubsection{Dubbel ingevoerde data} <h4> Dubbel ingevoerde data </h4>
 *duplicated()*  
 Deze functie  controleert of er data dubbel voorkomt in het dataframe. Deze functie vergelijkt hele rijen met elkaar, dus niet of een waarde meerdere keren voorkomt binnen een kolom.
 ```{r, echo=TRUE}
 (dupRows = which(duplicated(badData)))
 ```
 
-\subsubsection{Extreme of foutieve waardes}
+\subsubsection{Extreme of foutieve waardes} <h4> Extreme of foutieve waardes </h4>
 Soms komt het voor dat er foutieve waardes in je dataset terecht komen, of je wilt een subset van waardes selecteren om mee verder te werken. Stel dat in deze dataset alleen scores van 1 t/m 20 mogelijk zijn dan kan je alsvolgt controleren of er waardes zijn die daar buiten vallen en welke dat zijn:
 ```{r}
 minScore = 1

@@ -129,61 +129,101 @@ $(document).ready(function () {
 
 
 
-<p>In dit deel wordt onderstaande dataset, genaamd <em>badData</em> gebruikt om voorbeelden te geven. <details><summary>Code om <em>badData</em> te genereren </summary></p>
+<h3>
+Data inspecteren
+</h3>
+<p>In dit deel wordt onderstaande dataset, genaamd <em>badData</em> gebruikt om voorbeelden te geven.<br />
+<details><summary>Code om <em>badData</em> te genereren </summary></p>
 <pre class="r"><code>badData = data.long
 badData[c(4,7),3] = NA
 badData[4,2] = NA
+badData[2,3] = NaN
 badData[9,3] = 35.90
 badData[13,] = badData[12,]
 rownames(badData) = NULL</code></pre>
 <p></details></p>
-<pre><code>##      subj     time     score
-##         1        A     11.85
-##         2        A     19.34
-##         3        A     23.64
-##         4     &lt;NA&gt;        NA
-##         1        B      9.45
-##         2        B     19.69
-##         3        B        NA
-##         4        B     10.76
-##         1        C     35.90
-##         2        C     21.27
-##         3        C     16.16
-##         4        C     15.00
-##         4        C     15.00</code></pre>
+<pre><code>##        subj     time     score
+## 1         1        A     11.85
+## 2         2        A       NaN
+## 3         3        A     23.64
+## 4         4     &lt;NA&gt;        NA
+## 5         1        B      9.45
+## 6         2        B     19.69
+## 7         3        B        NA
+## 8         4        B     10.76
+## 9         1        C     35.90
+## 10        2        C     21.27
+## 11        3        C     16.16
+## 12        4        C     15.00
+## 13        4        C     15.00</code></pre>
 
-<p>Er bestaan vele manieren om ontbrekende en foutieve data op te sporen in je dataset. In deze handleiding zullen we het gebruik van de volgende functies bespreken:</p>
-<pre class="r"><code>is.na()
-is.nan()
-is.null()
+<h2>
+Foutieve data opsporen
+</h2>
+<p>Er bestaan vele manieren om ontbrekende en foutieve data op te sporen in je dataset. In deze handleiding bespreken we het gebruik van de volgende functies:</p>
+<pre class="r"><code>Which()
+is.na()
 duplicated()
 complete.cases()</code></pre>
+<p>De functie <em>which()</em> wordt gebruikt in combinatie met de andere functies om de positie op te vragen waar bepaalde waardes zich bevinden i.p.v. de waardes zelf.</p>
 
-<p>In R worden ontbrekende waardes weergegeven als <em>NaN</em> (Not A Number), <em>NA</em> (Not Available) of <em>NULL</em>. Om deze op te sporen kun je de functies <em>is.na(), is.nan(), is.null()</em> gebruiken. In dit voorbeeld staan er missende waardes als NA in de dataset:</p>
+<h4>
+Ontbrekende data
+</h4>
+<p>
+<p>In R worden ontbrekende waardes weergegeven als <em>NaN</em> (Not A Number) of <em>NA</em> (Not Available). Om deze op te sporen kun je de functies <em>is.na()</em> en <em>is.nan()</em> gebruiken.<br />
+Om de ontbrekende waardes in de dataset te vinden gebruiken we ..</p>
+<pre class="r"><code>is.na(badData)</code></pre>
+<p><details><summary>show output</summary></p>
+<pre><code>##        subj  time score
+##  [1,] FALSE FALSE FALSE
+##  [2,] FALSE FALSE  TRUE
+##  [3,] FALSE FALSE FALSE
+##  [4,] FALSE  TRUE  TRUE
+##  [5,] FALSE FALSE FALSE
+##  [6,] FALSE FALSE FALSE
+##  [7,] FALSE FALSE  TRUE
+##  [8,] FALSE FALSE FALSE
+##  [9,] FALSE FALSE FALSE
+## [10,] FALSE FALSE FALSE
+## [11,] FALSE FALSE FALSE
+## [12,] FALSE FALSE FALSE
+## [13,] FALSE FALSE FALSE</code></pre>
+</details> .. en dit geeft voor ieder element uit de dataset aan of het een <em>NA</em> is of niet met een waarde van TRUE / FALSE.
+</p>
+<p>In combinatie met de functie <em>which()</em> krijgen we het volgende resultaat:</p>
+<pre class="r"><code>(naRows = which(is.na(badData)))</code></pre>
+<pre><code>## [1] 17 28 30 33</code></pre>
 <pre class="r"><code>(naRows = which(is.na  (badData$score)))</code></pre>
-<pre><code>## [1] 4 7</code></pre>
-<p>In rij 4, 7 ontbreken dus meetwaardes in de kolom <em>score</em>.</p>
+<pre><code>## [1] 2 4 7</code></pre>
+<p>In rij 2, 4, 7 ontbreken dus meetwaardes in de kolom <em>score</em>.</p>
 <p>Een andere optie is om specifiek te zoeken naar proefobjecten waarvan de gegevens (in)compleet zijn. De functie <em>complete.cases()</em> geeft voor iedere rij uit de dataset aan of deze compleet is of niet (TRUE/FALSE). Een ‘case’ wordt alleen als compleet beschouwd wanneer er in alle kolommen waardes staan.</p>
 <pre class="r"><code>(complRows = complete.cases(badData))</code></pre>
-<pre><code>##  [1]  TRUE  TRUE  TRUE FALSE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE
+<pre><code>##  [1]  TRUE FALSE  TRUE FALSE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE
 ## [12]  TRUE  TRUE</code></pre>
 <p>In combinatie met de functie <em>which()</em> weet je welke rijnummers compleet zijn:</p>
 <pre class="r"><code>which(complete.cases(badData)) </code></pre>
-<pre><code>##  [1]  1  2  3  5  6  8  9 10 11 12 13</code></pre>
+<pre><code>##  [1]  1  3  5  6  8  9 10 11 12 13</code></pre>
 <p>Andersom kun je met het symbool <em>!</em> de selectie omdraaien en krijg je terug welke rijen incompleet zijn:</p>
 <pre class="r"><code>(incomRows = which(!complete.cases(badData)))</code></pre>
-<pre><code>## [1] 4 7</code></pre>
+<pre><code>## [1] 2 4 7</code></pre>
 
+<h4>
+Dubbel ingevoerde data
+</h4>
 <p><em>duplicated()</em><br />
 Deze functie controleert of er data dubbel voorkomt in het dataframe. Deze functie vergelijkt hele rijen met elkaar, dus niet of een waarde meerdere keren voorkomt binnen een kolom.</p>
 <pre class="r"><code>(dupRows = which(duplicated(badData)))</code></pre>
 <pre><code>## [1] 13</code></pre>
 
+<h4>
+Extreme of foutieve waardes
+</h4>
 <p>Soms komt het voor dat er foutieve waardes in je dataset terecht komen, of je wilt een subset van waardes selecteren om mee verder te werken. Stel dat in deze dataset alleen scores van 1 t/m 20 mogelijk zijn dan kan je alsvolgt controleren of er waardes zijn die daar buiten vallen en welke dat zijn:</p>
 <pre class="r"><code>minScore = 1
 maxScore = 20
 (badData$score &lt; minScore | badData$score &gt; maxScore)</code></pre>
-<pre><code>##  [1] FALSE FALSE  TRUE    NA FALSE FALSE    NA FALSE  TRUE  TRUE FALSE
+<pre><code>##  [1] FALSE    NA  TRUE    NA FALSE FALSE    NA FALSE  TRUE  TRUE FALSE
 ## [12] FALSE FALSE</code></pre>
 <p>Wederom kan je de functie <em>which()</em> gebruiken om op te vragen welke waardes dat precies zijn. Merk op dat de NA waardes niet worden genegeerd.</p>
 <pre class="r"><code>(extremeRows = which((badData$score &lt; minScore | badData$score &gt; maxScore)))</code></pre>
@@ -217,9 +257,7 @@ badData = badData[-naRows,]
 # BAD CODE !!</code></pre>
 <pre><code>##      subj     time     score
 ##         1        A      11.9
-##         2        A      19.3
-##         4     &lt;NA&gt;        NA
-##         3        B        NA
+##         2        B      19.7
 ##         3        C      16.2
 ##         4        C      15.0</code></pre>
 <p>maar zo</p>
@@ -229,7 +267,6 @@ badRows = unique(c(incomRows, naRows, extremeRows, dupRows))
 badData = badData[-badRows,]</code></pre>
 <pre><code>##      subj     time     score
 ##         1        A     11.85
-##         2        A     19.34
 ##         1        B      9.45
 ##         2        B     19.69
 ##         4        B     10.76
