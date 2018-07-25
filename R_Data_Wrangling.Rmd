@@ -2,22 +2,27 @@
 title: "R - data verwerking"
 author: "J.J. van Nijnatten"
 output:
+  pdf_document: default
   html_document: default
   toc: yes
   toc_depth: 4
-  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 ```
-
-\tableofcontents
+```{r, echo=FALSE}
+out_type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
+```
 
 ##### contact: J.J.vanNijnatten@uva.nl
 
 ##### broncode: https://github.com/jonasvannijnatten/R_Data_wrangling
+```{r, results='asis', echo=FALSE}
+switch(out_type,
+    latex = '\tableofcontents',
+    html = {cat('
 
 # **Inhoud** <a name="inhoud"></a>
 
@@ -35,8 +40,9 @@ knitr::opts_chunk$set(echo = TRUE)
 4. [Herstructureren van data](#Herstructureren)  
   4.1 [Datastructuren: wide vs. long format](#Datastructuren)  
   4.2 [Van wide naar long](#wide2long)  
-  4.3 [Van long naar wide](#long2wide)  
-  
+  4.3 [Van long naar wide](#long2wide)'
+)})
+```
 
 
 \newpage
@@ -80,6 +86,7 @@ data.bad[13,]      = data.bad[12,]  # dupliceer rij 12 in rij 13
 rownames(data.bad) = NULL          # verwijder rownames
 ```
 </details>
+\newpage
 <details><summary><span style="color:dodgerBlue">Toon dataset **data.long**</span></summary>
 ```{r, echo=FALSE}
 print(data.long, digits = 3, print.gap = 5, row.names = FALSE)
