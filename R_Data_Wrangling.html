@@ -125,6 +125,12 @@ $(document).ready(function () {
 
 
 <p></p>
+<div id="contact-j.j.vannijnattenuva.nl" class="section level5">
+<h5>contact: <a href="mailto:J.J.vanNijnatten@uva.nl">J.J.vanNijnatten@uva.nl</a></h5>
+</div>
+<div id="broncode-httpsgithub.comjonasvannijnattenr_data_wrangling" class="section level5">
+<h5>broncode: <a href="https://github.com/jonasvannijnatten/R_Data_wrangling" class="uri">https://github.com/jonasvannijnatten/R_Data_wrangling</a></h5>
+</div>
 <div id="inhoud" class="section level1">
 <h1><strong>Inhoud</strong> <a name="inhoud"></a></h1>
 <ol style="list-style-type: decimal">
@@ -146,7 +152,7 @@ $(document).ready(function () {
 <p><a name="Data_aanmaken"></a></p>
 <div id="datasets-aanmaken" class="section level3">
 <h3>Datasets aanmaken</h3>
-<p>Hieronder staat de code om de datasets te genereren die in deze handleiding wordt gebruitk: <details><summary><span style="color:dodgerBlue">Toon code om data te genereren </span> </summary></p>
+<p>Hieronder staat de code om de datasets te genereren die in deze handleiding wordt gebruikt: <details><summary><span style="color:dodgerBlue">Toon code om data te genereren </span> </summary></p>
 <pre class="r"><code>set.seed(06)   # set seed
 nrofsubs  = 4  # set number of subjects
 nrofconds = 3  # set number of conditions
@@ -229,6 +235,7 @@ rownames(data.bad) = NULL          # verwijder rownames</code></pre>
 <div align="right">
 <a href="#inhoud">inhoud</a>
 </div>
+<hr />
 
 <p><a name="Foutieve_data"></a></p>
 </div>
@@ -350,17 +357,11 @@ is.numeric(numbers)             # TRUE: variabele is numeriek</code></pre>
 <p>In bovenstaand voorbeeld wordt een variabele aangemaakt met getallen, maar omdat ze tussen aanhalingstekens staan wordt het door R gezien als tekst i.p.v. numerieke waardes. Met de functie <em>as.numeric()</em> wordt de tekst omgeschreven naar numerieke waardes.</p>
 <p><strong>Voorbeeld</strong> numerieke waardes naar categorische variabelen:</p>
 <pre class="r"><code>conditions = rep(x=c(1,2,3),times=5)      # variabele die conditie (1 t/m 3) codeert
-is.numeric(conditions)                    # TRUE: variabele is numeriek</code></pre>
-<pre><code>## [1] TRUE</code></pre>
-<pre class="r"><code>mean(conditions)                          # R kan hier mee rekenen, maar betkent niets</code></pre>
-<pre><code>## [1] 2</code></pre>
-<pre class="r"><code>conditions = as.factor(conditions)        # verandert variabele naar categorisch (factor)
-is.numeric(conditions)                    # FALSE: variabele is een factor</code></pre>
-<pre><code>## [1] FALSE</code></pre>
-<pre class="r"><code>mean(conditions)                          # error: met deze waarde kan R niet rekenen</code></pre>
-<pre><code>## Warning in mean.default(conditions): argument is not numeric or logical:
-## returning NA</code></pre>
-<pre><code>## [1] NA</code></pre>
+is.numeric(conditions)                    # TRUE: variabele is numeriek
+mean(conditions)                          # R kan hier mee rekenen, maar betkent niets
+conditions = as.factor(conditions)        # verandert variabele naar categorisch (factor)
+is.numeric(conditions)                    # FALSE: variabele is een factor
+mean(conditions)                          # NA: met deze variabele kan R niet rekenen</code></pre>
 <p>In bovenstaand voorbeeld zijn de condities gecodeerd met 1 t/m 3. De cijfers 1 t/m 3 geven hier alleen aan tot welke conditie iets hoort, maar het getal geeft geen quantitatieve informatie. wanneer je per ongeluk de data verkeerd invoert in een functie kan R hier toch mee gaan rekenen en krijg je een onzinnige output zonder dat R een waarschuwing geeft. Door er een <em>factor</em> van te maken geef je expliciet aan dat het niet gaat om quantitatieve waardes maar om benaming.</p>
 <div align="right">
 <a href="#inhoud">inhoud</a>
@@ -372,27 +373,27 @@ is.numeric(conditions)                    # FALSE: variabele is een factor</code
 </div>
 <div id="data-opschonen-1" class="section level2">
 <h2>Data opschonen</h2>
-<p>Wanneer je foutieve waardes in je dataset hebt opgespoord kun je twee dingen doen: 1) De proefobjecten met die foutieve waardes verwijderen uit je dataset, of 2) alleen de correcte data opslaan in een nieuwe dataset.  Als je weet welke rijen in je dataset waardes bevatten die je wilt verwijderen kan dat alsvolgt:</p>
-<pre class="r"><code>naRows = which(is.na(data.bad$score)) # rij-nummers met incomplete data
-data.bad = data.bad[-naRows,] # selecteer alles behalve incomplete rijen</code></pre>
-<p>Let op! wanneer je de rijnummers bewaart met slechte data, zorg dan dat je alles in een keer verwijdert. Stel dat je eerst de incomplete rijen verwijdert, en daarna de extreme waardes, dan zullen na de eerste keer verwijderen de rijnummers opschuiven en gooi je bij de volgende stap mogelijk de vereerde data weg.</p>
-<p>Dus niet zo</p>
-<pre class="r"><code># BAD CODE !!
-data.bad = data.bad[-dupRows]
-data.bad = data.bad[-extremeRows,]
-data.bad = data.bad[-incomRows,]
-data.bad = data.bad[-naRows,] 
-# BAD CODE !!</code></pre>
-<pre><code>##      subj     time     score
-##         1        A      11.9
-##         2        B      19.7
-##         3        C      16.2
-##         4        C      15.0</code></pre>
-<p>maar zo</p>
-<pre class="r"><code># maak verzameling met unieke rij-nummers met foute data.
-badRows = unique(c(incomRows, naRows, extremeRows, dupRows)) 
-# verwijder alle rijen in een keer om te voorkomen dat rijen opschuiven
-data.bad = data.bad[-badRows,]</code></pre>
+<p>Hiervoor hebben we besproken hoe je foutieve en ontbrekende data kunt opsporen. De volgende stap is om je dataset op te schonen. Je kunt dit op 2 manieren doen: 1) een-voor-een verschillende soorten foutieve data opsporen en verwijderen, of 2) alle soorten foutieve data opsporen en die in een keer verwijderen. Hieronder twee goede voorbeelden van code om data op te schonen, en een veelvoorkomende foute manier.</p>
+<p><strong>Methode 1:</strong></p>
+<pre class="r"><code>(naRows = which(is.na(data.bad$score)))  # identificeer ontbrekende waardes
+## [1] 2 4 7
+data.bad = data.bad[-naRows,]            # verwijder rijen
+
+(dupRows = which(duplicated(data.bad)))  # identificeer gedupliceerde rijen
+## [1] 10
+data.bad = data.bad[-dupRows,]           # verwijder rijen
+
+(incomRows = which(!complete.cases(data.bad))) # identificeer incomplete rijen
+## integer(0)
+# niets gevonden..
+
+# identificeer scores buiten het bereik 1 t/m 20
+minScore = 1
+maxScore = 20
+(extremeRows = which((data.bad$score &lt; minScore | data.bad$score &gt; maxScore)))
+## [1] 2 6 7
+data.bad = data.bad[-extremeRows,]      # verwijder rijen</code></pre>
+<p>Resultaat:</p>
 <pre><code>##      subj     time     score
 ##         1        A     11.85
 ##         1        B      9.45
@@ -400,9 +401,59 @@ data.bad = data.bad[-badRows,]</code></pre>
 ##         4        B     10.76
 ##         3        C     16.16
 ##         4        C     15.00</code></pre>
-<p>Let hierbij op het min-teken (*-}) wat aangeeft dat je alles behalve die data selecteert.</p>
+<hr />
+<p><strong>Methode 2:</strong></p>
+<pre class="r"><code>(naRows = which(is.na(data.bad$score)))        # identificeer ontbrekende waardes
+## [1] 2 4 7
+(dupRows = which(duplicated(data.bad)))        # identificeer gedupliceerde rijen
+## [1] 13
+(incomRows = which(!complete.cases(data.bad))) # identificeer incomplete rijen
+## [1] 2 4 7
+# identificeer scores buiten het bereik 1 t/m 20
+minScore = 1
+maxScore = 20
+(extremeRows = which((data.bad$score &lt; minScore | data.bad$score &gt; maxScore)))
+## [1]  3  9 10
+# creeer een variabele met alle unieke rijnummers die verwijderd moeten worden
+(badRows = unique(c(naRows, extremeRows, dupRows)))
+## [1]  2  4  7  3  9 10 13
+data.clean = data.bad[-badRows,] # verwijder alle rijen in een keer</code></pre>
+<p>Resultaat:</p>
+<pre><code>##      subj     time     score
+##         1        A     11.85
+##         1        B      9.45
+##         2        B     19.69
+##         4        B     10.76
+##         3        C     16.16
+##         4        C     15.00</code></pre>
+<hr />
+<p><strong>Hoe niet:</strong></p>
+<pre class="r"><code># BAD CODE !!
+(naRows = which(is.na(data.bad$score)))        # identificeer ontbrekende waardes
+## [1] 2 4 7
+(dupRows = which(duplicated(data.bad)))        # identificeer gedupliceerde rijen
+## [1] 13
+(incomRows = which(!complete.cases(data.bad))) # identificeer incomplete rijen
+## [1] 2 4 7
+# identificeer scores buiten het bereik 1 t/m 20
+minScore = 1
+maxScore = 20
+(extremeRows = which((data.bad$score &lt; minScore | data.bad$score &gt; maxScore)))
+## [1]  3  9 10
 
-
+# verwijder om de beurt de verschillende foutieve rijen
+data.bad = data.bad[-naRows,] 
+data.bad = data.bad[-extremeRows,]
+data.bad = data.bad[-dupRows]
+data.bad = data.bad[-incomRows,]
+# BAD CODE !!</code></pre>
+<p>Resultaat:</p>
+<pre><code>##        subj     time     score
+## 1         1        A      11.9
+## 6         2        B      19.7
+## 9         1        C      35.9
+## 10        2        C      21.3</code></pre>
+Hier zie je dat de NAs wel uit de dataset zijn verwijderd, maar er zitten nog wel extreme waardes tussen, en andere, valide waardes zijn wel verwijderd. Dit komt doordat bij het een-voor-een verwijderen van de foutieve data de rijnummers in de dataset telkens opschuiven maar de identificatie van die rijen, die daarvoor was gedaan, niet tussendoor aangepast.
 <div align="right">
 <a href="#inhoud">inhoud</a>
 </div>
@@ -458,7 +509,7 @@ Bij dit format staan alle meetwaarden van de verschillende condities in dezelfde
 ##         2     19.3     19.69     21.3
 ##         3     23.6     16.22     16.2
 ##         4     15.1     10.76     15.0</code></pre>
-<p>Om de data te herstructureren naar het LONG format kun je de <em>reshape()</em> functie alsvolgt gebruiken:</p>
+<p>Code om data van WIDE format om te zetten naar LONG format:</p>
 <pre class="r"><code># transform data from wide to long format ----
 data.long =                               
     reshape(data        = data.wide       # naam van de oude dataset in het WIDE format
@@ -469,6 +520,7 @@ data.long =
             ,timevar    = 'time'          # naam van nieuwe kolom met condities
             ,times      = c('A','B','C')  # waardes 
     )</code></pre>
+<p>Resultaat:</p>
 <pre><code>##      subj     time     score
 ##         1        A     11.85
 ##         2        A     19.34
@@ -506,7 +558,7 @@ data.long =
 ##         2        C     21.27
 ##         3        C     16.16
 ##         4        C     15.00</code></pre>
-<p>Om de data te herstructureren naar het WIDE format kun je de <em>reshape()</em> functie alsvolgt gebruiken:</p>
+<p>Code om data van LONG format om te zetten naar WIDE format:</p>
 <pre class="r"><code># transform data from long to wide format ---- 
 data.wide =   
 reshape(data          = data.long      # naam van de oude dataset
@@ -516,11 +568,13 @@ reshape(data          = data.long      # naam van de oude dataset
           ,idvar      = 'subj'         # kolomnaam met de ppn-nummers
   )        
 names(data.wide)[2:4] = c('A','B','C') # pas de kolomnamen met scores aan</code></pre>
+<p>Resultaat:</p>
 <pre><code>##      subj        A         B        C
 ##         1     11.9      9.45     12.1
 ##         2     19.3     19.69     21.3
 ##         3     23.6     16.22     16.2
 ##         4     15.1     10.76     15.0</code></pre>
+</details>
 <div align="right">
 <a href="#inhoud">inhoud</a>
 </div>
