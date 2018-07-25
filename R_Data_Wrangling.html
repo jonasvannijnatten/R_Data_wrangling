@@ -125,15 +125,41 @@ $(document).ready(function () {
 
 
 <p></p>
+<div id="inhoud" class="section level1">
+<h1><strong>Inhoud</strong> <a name="inhoud"></a></h1>
+<ol style="list-style-type: decimal">
+<li><p><a href="#Data_aanmaken">Dataset aanmaken</a></p></li>
+<li><p><a href="#Data_inspecteren">Data inspecteren</a><br />
+2.1 <a href="#Foutieve_data">Foutieve data opsporen</a><br />
+2.1.1 <a href="#Dubbele_data">Dubbele ingevoerde data</a><br />
+2.1.2 <a href="#Extreme_data">Extreme of foutieve waardes</a><br />
+2.2 <a href="#Data_types">Data types controleren</a></p></li>
+<li><p><a href="#Data_opschonen">Data opschonen</a></p></li>
+<li><p><a href="#Herstructureren">Herstructureren van data</a><br />
+4.1 <a href="#Datastructuren">Datastructuren: wide vs. long format</a><br />
+4.2 <a href="#wide2long">Van wide naar long</a><br />
+4.3 <a href="#long2wide">Van long naar wide</a></p></li>
+</ol>
 
 
+<a name="Data_aanmaken"></a>
+<div align="right">
+<a href="#inhoud">inhoud</a>
+</div>
+<div id="dataset-aanmaken" class="section level3">
+<h3>Dataset aanmaken</h3>
+<hr />
 
 
-<h3>
-Data inspecteren
-</h3>
-<p>In dit deel wordt onderstaande dataset, genaamd <em>badData</em> gebruikt om voorbeelden te geven.<br />
-<details><summary>Code om <em>badData</em> te genereren </summary></p>
+<a name="Data_inspecteren"></a>
+<div align="right">
+<a href="#inhoud">inhoud</a>
+</div>
+</div>
+<div id="data-inspecteren-1" class="section level3">
+<h3>Data inspecteren</h3>
+<p>In dit deel wordt onderstaande dataset, genaamd <strong>badData</strong> gebruikt om voorbeelden te geven.<br />
+<details><summary><span style="color:dodgerBlue">Toon code om <strong>badData</strong> te genereren </span></summary></p>
 <pre class="r"><code>badData = data.long
 badData[c(4,7),3] = NA
 badData[4,2] = NA
@@ -141,7 +167,7 @@ badData[2,3] = NaN
 badData[9,3] = 35.90
 badData[13,] = badData[12,]
 rownames(badData) = NULL</code></pre>
-<p></details></p>
+<p></details> <details><summary><span style="color:dodgerBlue">Toon dataset <strong>badData</strong></span></summary></p>
 <pre><code>##        subj     time     score
 ## 1         1        A     11.85
 ## 2         2        A       NaN
@@ -156,10 +182,13 @@ rownames(badData) = NULL</code></pre>
 ## 11        3        C     16.16
 ## 12        4        C     15.00
 ## 13        4        C     15.00</code></pre>
-
-<h2>
-Foutieve data opsporen
-</h2>
+</details>  <a name="Foutieve_data"></a>
+<div align="right">
+<a href="#inhoud">inhoud</a>
+</div>
+</div>
+<div id="foutieve-data-opsporen-1" class="section level3">
+<h3>Foutieve data opsporen</h3>
 <p>Er bestaan vele manieren om ontbrekende en foutieve data op te sporen in je dataset. In deze handleiding bespreken we het gebruik van de volgende functies:</p>
 <pre class="r"><code>Which()
 is.na()
@@ -171,10 +200,11 @@ complete.cases()</code></pre>
 Ontbrekende data
 </h4>
 <p>
-<p>In R worden ontbrekende waardes weergegeven als <em>NaN</em> (Not A Number) of <em>NA</em> (Not Available). Om deze op te sporen kun je de functies <em>is.na()</em> en <em>is.nan()</em> gebruiken.<br />
+<p><em>is.nan()</em><br />
+In R worden ontbrekende waardes weergegeven als <em>NaN</em> (Not A Number) of <em>NA</em> (Not Available). Om deze op te sporen kun je de functies <em>is.na()</em> en <em>is.nan()</em> gebruiken.<br />
 Om de ontbrekende waardes in de dataset te vinden gebruiken we ..</p>
 <pre class="r"><code>is.na(badData)</code></pre>
-<p><details><summary>show output</summary></p>
+<p><details><summary><span style="color:dodgerBlue">show output</span></summary></p>
 <pre><code>##        subj  time score
 ##  [1,] FALSE FALSE FALSE
 ##  [2,] FALSE FALSE  TRUE
@@ -191,35 +221,46 @@ Om de ontbrekende waardes in de dataset te vinden gebruiken we ..</p>
 ## [13,] FALSE FALSE FALSE</code></pre>
 </details> .. en dit geeft voor ieder element uit de dataset aan of het een ontbrekende waarde is of niet met een waarde van TRUE / FALSE.
 </p>
+<p>
 <p>In combinatie met de functie <em>which()</em> krijgen we het volgende resultaat:</p>
 <pre class="r"><code>(naRows = which(is.na(badData)))</code></pre>
 <pre><code>## [1] 17 28 30 33</code></pre>
-<p>Dit zijn dus de positienummers van de elementen in de dataset, geteld van linksboven.</p>
-<pre class="r"><code>(naRows = which(is.na  (badData$score)))</code></pre>
+Dit zijn dus de positienummers van de elementen in de dataset die geen waarde bevatten.
+</p>
+<p>
+<p>Meestal is het overzichtelijker om per kolom te bekijken welke rijnummers data missen. Door met indexeren alleen binnen een kolom van de dataset te kijken krijg je de rijnummers waarin data ontbreken:</p>
+<pre class="r"><code>(naRows = which(is.na(badData$score)))</code></pre>
 <pre><code>## [1] 2 4 7</code></pre>
-<p>In rij 2, 4, 7 ontbreken dus meetwaardes in de kolom <em>score</em>.</p>
-<p>Een andere optie is om specifiek te zoeken naar proefobjecten waarvan de gegevens (in)compleet zijn. De functie <em>complete.cases()</em> geeft voor iedere rij uit de dataset aan of deze compleet is of niet (TRUE/FALSE). Een ‘case’ wordt alleen als compleet beschouwd wanneer er in alle kolommen waardes staan.</p>
-<pre class="r"><code>(complRows = complete.cases(badData))</code></pre>
-<pre><code>##  [1]  TRUE FALSE  TRUE FALSE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE
-## [12]  TRUE  TRUE</code></pre>
-<p>In combinatie met de functie <em>which()</em> weet je welke rijnummers compleet zijn:</p>
+In rij 2, 4, 7 ontbreken dus meetwaardes in de kolom <em>score</em>.
+</p>
+<p>
+<p><em>complete.cases()</em><br />
+De functie <em>complete.cases()</em> geeft voor iedere rij uit de dataset aan of deze compleet is of niet (TRUE/FALSE). Een ‘case’ wordt alleen als compleet beschouwd wanneer er in alle kolommen waardes staan. In combinatie met de functie <em>which()</em> weet je welke rijnummers compleet zijn:</p>
 <pre class="r"><code>which(complete.cases(badData)) </code></pre>
 <pre><code>##  [1]  1  3  5  6  8  9 10 11 12 13</code></pre>
-<p>Andersom kun je met het symbool <em>!</em> de selectie omdraaien en krijg je terug welke rijen incompleet zijn:</p>
+<p>Andersom kun je door het symbool <strong>!</strong> voor de functie <em>complete.cases()</em> te zetten de selectie omdraaien en krijg je terug welke rijen incompleet zijn (m.a.w. welke rijen zijn NIET compleet):</p>
 <pre class="r"><code>(incomRows = which(!complete.cases(badData)))</code></pre>
 <pre><code>## [1] 2 4 7</code></pre>
+</p>
+<a name="Dubbele_data"></a>
+<div align="right">
+<a href="#inhoud">inhoud</a>
+</div>
+<div id="dubbel-ingevoerde-data" class="section level4">
+<h4>Dubbel ingevoerde data</h4>
 
-<h4>
-Dubbel ingevoerde data
-</h4>
 <p><em>duplicated()</em><br />
 Deze functie controleert of er data dubbel voorkomt in het dataframe. Deze functie vergelijkt hele rijen met elkaar, dus niet of een waarde meerdere keren voorkomt binnen een kolom.</p>
 <pre class="r"><code>(dupRows = which(duplicated(badData)))</code></pre>
 <pre><code>## [1] 13</code></pre>
 
-<h4>
-Extreme of foutieve waardes
-</h4>
+<a name="Extreme_data"></a>
+<div align="right">
+<a href="#inhoud">inhoud</a>
+</div>
+</div>
+<div id="extreme-of-foutieve-waardes-1" class="section level4">
+<h4>Extreme of foutieve waardes</h4>
 <p>Soms komt het voor dat er foutieve waardes in je dataset terecht komen, of je wilt een subset van waardes selecteren om mee verder te werken. Stel dat in deze dataset alleen scores van 1 t/m 20 mogelijk zijn dan kan je alsvolgt controleren of er waardes zijn die daar buiten vallen en welke dat zijn:</p>
 <pre class="r"><code>minScore = 1
 maxScore = 20
@@ -231,6 +272,14 @@ maxScore = 20
 <pre><code>## [1]  3  9 10</code></pre>
 
 
+<a name="Data_types"></a>
+<div align="right">
+<a href="#inhoud">inhoud</a>
+</div>
+</div>
+</div>
+<div id="data-types-controleren-1" class="section level3">
+<h3>Data types controleren</h3>
 <p>R ken verschillende soorten data types zoals o.a. <em>numeric</em> (numerieke waardes) <em>character</em> (tekst), <em>logical</em> (TRUE / FALSE) en <em>factor</em> (categorische waardes). Als de data niet als het juiste type is opgeslagen in R zullen de functies een error geven, of (nog gevaarlijker) een verkeerde output geven. Raadpleeg altijd de <em>help</em>-files van de functies voor welk data type ze als input verwachten.</p>
 <p>Functies om het datateyp te <strong>controleren</strong>:<br />
 <br />
@@ -243,8 +292,16 @@ is.character(numbers)           # TRUE:  variabele is tekst
 numbers = as.numeric(numbers)   # verandert variabele van tekst naar numeriek
 is.numeric(numbers)             # TRUE: variabele is numeriek</code></pre>
 <p>In bovenstaand voorbeeld wordt een variabele aangemaakt met getallen, maar omdat ze tussen aanhalingstekens staan wordt het door R gezien als tekst i.p.v. numerieke waardes. Met de functie <em>as.numeric()</em> wordt de tekst omgeschreven naar numerieke waardes.</p>
+<hr />
 
 
+<a name="Data_opschonen"></a>
+<div align="right">
+<a href="#inhoud">inhoud</a>
+</div>
+</div>
+<div id="data-opschonen-1" class="section level2">
+<h2>Data opschonen</h2>
 <p>Wanneer je foutieve waardes in je dataset hebt opgespoord kun je twee dingen doen: 1) De proefobjecten met die foutieve waardes verwijderen uit je dataset, of 2) alleen de correcte data opslaan in een nieuwe dataset.  Als je weet welke rijen in je dataset waardes bevatten die je wilt verwijderen kan dat alsvolgt:</p>
 <pre class="r"><code>naRows = which(is.na(badData$score)) # rij-nummers met incomplete data
 badData = badData[-naRows,] # selecteer alles behalve incomplete rijen</code></pre>
@@ -276,14 +333,58 @@ badData = badData[-badRows,]</code></pre>
 <p>Let hierbij op het min-teken (*-}) wat aangeeft dat je alles behalve die data selecteert.</p>
 
 
+<hr />
 
 
-<p>In de praktijk van het wetenschappelijk onderzoek worden experimenten vaak uitgevoerd met andere apparatuur en computers dan waar je de uiteindelijke statistische analyse gaat uitvoeren. De data zoals die uit het experiment komen rollen zijn meestal niet geschikt om direct een statistische toets op uit te voeren. Het kan zijn dat de data eerst moet worden opgeschoond. Dat wil zeggen, je moet controleren of de gemeten waardes wel binnen een plausibel bereik vallen, dus geen onmogelijke of onwaarschijnlijke waardes bevatten. Het kan ook gebeuren dat een proefdier of proefpersoon niet altijd de taak uitvoert zoals bedoeld en er een deel van de data ontbreekt. Dan is het belangrijk in beeld te brengen hoe vaak en wanneer dat gebeurt, en deze metingen weg te laten uit de analyse, of eventueel zelf alle metingen van betreffende proefdier / -persoon weg te laten.</p>
+<a name="Herstructureren"></a>
+<div align="right">
+<a href="#inhoud">inhoud</a>
+</div>
+</div>
+<div id="herstructureren-van-data-1" class="section level2">
+<h2>Herstructureren van data</h2>
+<p>In de praktijk van het wetenschappelijk onderzoek zijn de data zoals die uit een experiment komen rollen meestal niet geschikt om direct een statistische toets op uit te voeren. Vaak moeten ze eerst worden ingelezen in R vanuit een ander format (matlab, excel, .txt etc.). Het kan zijn dat de data eerst moet worden opgeschoond. Dat wil zeggen, je moet controleren of de gemeten waardes wel binnen een plausibel bereik vallen, dus geen onmogelijke of onwaarschijnlijke waardes bevatten. Het kan ook gebeuren dat een proefdier of proefpersoon niet altijd de taak uitvoert zoals bedoeld en er een deel van de data ontbreekt. Dan is het belangrijk in beeld te brengen hoe vaak en wanneer dat gebeurt, en deze metingen weg te laten uit de analyse, of eventueel zelf alle metingen van betreffende proefdier / -persoon weg te laten.</p>
 <p>Daarnaast werken sommige functies alleen correct wanneer de data van het juiste type zijn (bv. <em>numeric, character, factor</em>) en dat kun je niet altijd duidelijk zien op het eerste oog (b.v.: een “5” kan door R als <em>character</em>worden gezien, en niet als een nummer waar je mee kunt rekenen). Wat ook mis kan gaan is wanneer je condities of proefpersonen aanduidt met nummers en R die getallen gebruikt om mee te rekenen i.p.v. deze te gebruiken om te weten bij welk proefobject / welke conditie een meetwaarde hoort. Het beste is om categorische data aan te duiden met letters. Gebruik bijvoorbeeld “S1”,“S2”, .. i.p.v. “1”,“2”,.. om proefobjecten aan te duiden, of “Conditie 1”, “Conditie 2” i.p.v. “1”,“2” (nog beter is om informatieve namen te gebruiken zoals: “Control”, “LowDose”,“HighDose”).</p>
+<a name="Datastructuren"></a>
+<div align="right">
+<a href="#inhoud">inhoud</a>
+</div>
+<div id="datastructuren-wide-vs.long-format" class="section level3">
+<h3>Datastructuren: wide vs. long format</h3>
 
 <p>Wanneer je alle data hebt opgeschoond en gecontroleerd kan het nog zijn dat de dataset niet de juiste <em>structuur</em> heeft. Met structuur bedoelen we hier hoe de onafhankelijk en afhankelijke variabelen en de subjectnummers etc. zijn ingedeeld. Er wordt een onderscheid gemaakt tussen het <strong>LONG</strong> en <strong>WIDE</strong> format.</p>
-<p> Wanneer een proefobject meermaals hebt gemeten en alle meetwaarden (afhankelijke variabelen) van de verschillende condities naast elkaar in aparte kolommen staan (dus 1 rij per proefobject) spreken we van een <strong>WIDE</strong> format zoals geillustreerd in Fig X.</p>
-<p> Bij dit format staan alle meetwaarden van de verschillende condities in dezelfde kolom, met daarnaast een kolom die aanduid bij welke conditie iedere meetwaarde hoort, en een kolom die aanduid van welk proefobject de meetwaarde afkomstig is zoals geillustreerd in Fig X.</p>
+<p> <strong>WIDE FORMAT</strong><br />
+Wanneer een proefobject meermaals is gemeten en alle meetwaarden (afhankelijke variabelen) van de verschillende condities naast elkaar in aparte kolommen staan (dus 1 rij per proefobject) spreken we van een <strong>WIDE</strong> format. <details><summary><span style="color:dodgerBlue"> show example </span></summary></p>
+<pre><code>##      subj        A         B        C
+##         1     11.9      9.45     12.1
+##         2     19.3     19.69     21.3
+##         3     23.6     16.22     16.2
+##         4     15.1     10.76     15.0</code></pre>
+<p></details></p>
+<p> <strong>LONG FORMAT</strong><br />
+Bij dit format staan alle meetwaarden van de verschillende condities in dezelfde kolom, met daarnaast een kolom die aanduid bij welke conditie iedere meetwaarde hoort, en een kolom die aanduid van welk proefobject de meetwaarde afkomstig is zoals geillustreerd in Fig X. <details><summary><span style="color:dodgerBlue">show example</span></summary></p>
+<pre><code>##      subj     time     score
+##         1        A     11.85
+##         2        A     19.34
+##         3        A     23.64
+##         4        A     15.12
+##         1        B      9.45
+##         2        B     19.69
+##         3        B     16.22
+##         4        B     10.76
+##         1        C     12.11
+##         2        C     21.27
+##         3        C     16.16
+##         4        C     15.00</code></pre>
+<p></details></p>
+<hr />
+<a name="wide2long"></a>
+<div align="right">
+<a href="#inhoud">inhoud</a>
+</div>
+</div>
+<div id="van-wide-naar-long" class="section level3">
+<h3>Van wide naar long</h3>
 
 
 <p>Stel je hebt 4 proefobjecten gemeten in 3 verschillende condities je data staan in het WIDE format:</p>
@@ -318,6 +419,13 @@ data.long =
 ##         4        C     15.00</code></pre>
 
 
+<a name="long2wide"></a>
+<div align="right">
+<a href="#inhoud">inhoud</a>
+</div>
+</div>
+<div id="van-long-naar-wide-1" class="section level3">
+<h3>Van long naar wide</h3>
 <p>Stel je hebt 4 proefobjecten gemeten in 3 verschillende condities je data staan in het LONG format:</p>
 <pre><code>##      subj     time     score
 ##         1        A     11.85
@@ -347,6 +455,9 @@ names(data.wide)[2:4] = c('A','B','C') # pas de kolomnamen met scores aan</code>
 ##         2     19.3     19.69     21.3
 ##         3     23.6     16.22     16.2
 ##         4     15.1     10.76     15.0</code></pre>
+</div>
+</div>
+</div>
 
 
 
