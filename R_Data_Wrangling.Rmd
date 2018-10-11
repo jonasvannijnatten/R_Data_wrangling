@@ -1,11 +1,15 @@
 ---
-title: "R - data verwerking"
+title: "R - Dataverwerking"
 author: "J.J. van Nijnatten"
 output:
-  pdf_document: default
-  html_document: default
-  toc: yes
-  toc_depth: 4
+  pdf_document:
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
+  html_document:
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
 ---
 
 ```{r setup, include=FALSE}
@@ -16,40 +20,13 @@ knitr::opts_chunk$set(echo = TRUE)
 out_type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
 ```
 
-##### contact: J.J.vanNijnatten@uva.nl
+contact: J.J.vanNijnatten@uva.nl
 
-##### broncode: https://github.com/jonasvannijnatten/R_Data_wrangling
-```{r, results='asis', echo=FALSE}
-switch(out_type,
-    latex = '\tableofcontents',
-    html = {cat('
-
-# **Inhoud** <a name="inhoud"></a>
-
-1. [Datasets aanmaken](#Data_aanmaken)    
-
-2. [Data inspecteren](#Data_inspecteren)  
-  2.1 [Foutieve data opsporen](#Foutieve_data)  
-    2.1.1 [Ontbrekende data](#Ontbrekende_data)  
-    2.1.2 [Dubbele ingevoerde data](#Dubbele_data)  
-    2.1.3 [Extreme of foutieve waardes](#Extreme_data)  
-  2.2 [Data types controleren](#Data_types)  
-  
-3. [Data opschonen](#Data_opschonen)  
-
-4. [Herstructureren van data](#Herstructureren)  
-  4.1 [Datastructuren: wide vs. long format](#Datastructuren)  
-  4.2 [Van wide naar long](#wide2long)  
-  4.3 [Van long naar wide](#long2wide)'
-)})
-```
-
+broncode: https://github.com/jonasvannijnatten/R_Data_wrangling  
 
 \newpage
-\section{Generate data}
-<a name="Data_aanmaken"></a>
 
-### Datasets aanmaken
+# Datasets aanmaken
 Hieronder staat de code om de datasets te genereren die in deze handleiding wordt gebruikt:
 <details><summary><span style="color:dodgerBlue">Toon code om data te genereren </span>
 </summary>
@@ -104,11 +81,97 @@ print(data.bad, digits = 3, print.gap = 5, row.names = TRUE)
 </details>
 <div align="right"><a href='#inhoud'>inhoud</a></div>
 ***
-\newpage
-\section{Data inspecteren} 
-<a name="Data_inspecteren"></a> 
 
-### Data inspecteren 
+\newpage
+
+# Herstructureren van data 
+
+## Datastructuren: wide vs. long format  
+Wanneer je alle data hebt opgeschoond en gecontroleerd kan het nog zijn dat de dataset niet de juiste *structuur* heeft.
+Met structuur bedoelen we hier hoe de onafhankelijk en afhankelijke variabelen en de subjectnummers etc. zijn ingedeeld. Er wordt een onderscheid gemaakt tussen het **LONG** en **WIDE** format. 
+
+\textbf{WIDE FORMAT}
+**WIDE FORMAT**  
+Wanneer een proefobject meermaals is gemeten en alle meetwaarden (afhankelijke variabelen) van de verschillende condities naast elkaar in aparte kolommen staan (dus 1 rij per proefobject) spreken we van een **WIDE** format. 
+<details><summary><span style="color:dodgerBlue"> show example </span></summary>
+```{r, echo=FALSE}
+print(data.wide, digits = 3, print.gap = 5, row.names = FALSE)
+```
+</details>
+
+\textbf{LONG FORMAT}
+**LONG FORMAT**  
+Bij dit format staan alle meetwaarden van de verschillende condities in dezelfde kolom, met daarnaast een kolom die aanduid bij welke conditie iedere meetwaarde hoort, en een kolom die aanduid van welk proefobject de meetwaarde afkomstig is zoals geillustreerd in Fig X. 
+<details><summary><span style="color:dodgerBlue">show example</span></summary>
+```{r, echo=FALSE}
+print(data.long, digits = 3, print.gap = 5, row.names = FALSE)
+```
+</details>
+<div align="right"><a href='#inhoud'>inhoud</a></div>
+***
+
+\newpage
+
+## Van wide naar long 
+
+Stel je hebt `r nrofsubs` proefobjecten gemeten in `r nrofconds` verschillende condities je data staan in het WIDE format:
+```{r, echo=FALSE}
+print(data.wide, digits = 3, print.gap = 5, row.names = FALSE)
+```
+Code om data van WIDE format om te zetten naar LONG format: 
+```{r, echo= TRUE}
+# transform data from wide to long format ----
+data.long =                               
+    reshape(data        = data.wide       # naam van de oude dataset in het WIDE format
+            ,direction  = 'long'          # richting van de data-transformatie
+            ,varying    = c('A','B','C')  # kolomnamen die worden samengevoegd
+            ,idvar      = 'subj'          # kolomnaam met de ppn-nummers
+            ,v.names    = 'score'         # naam van nieuwe kolom met meetwaarden
+            ,timevar    = 'time'          # naam van nieuwe kolom met condities
+            ,times      = c('A','B','C')  # waardes 
+    )
+```
+
+Resultaat:
+```{r, echo=FALSE}
+print(data.long, digits = 3, print.gap = 5, row.names = FALSE)
+```
+<div align="right"><a href='#inhoud'>inhoud</a></div>
+***
+\newpage
+
+## Van long naar wide  
+
+Stel je hebt `r nrofsubs` proefobjecten gemeten in `r nrofconds` verschillende condities je data staan in het LONG format:
+```{r, echo=FALSE}
+print(data.long, digits = 3, print.gap = 5, row.names = FALSE)
+```
+
+Code om data van LONG format om te zetten naar WIDE format: 
+
+```{r, echo= TRUE}
+# transform data from long to wide format ---- 
+data.wide =   
+reshape(data          = data.long      # naam van de oude dataset
+          ,direction  = 'wide'         # richting van de data-transformatie
+          ,v.names    = 'score'        # kolomnaam met de meetwaarden
+          ,timevar    = 'time'         # kolomnaam met de conditienamen
+          ,idvar      = 'subj'         # kolomnaam met de ppn-nummers
+  )        
+names(data.wide)[2:4] = c('A','B','C') # pas de kolomnamen met scores aan
+```
+Resultaat:
+```{r, echo=FALSE}
+print(data.wide, digits = 3, print.gap = 5, row.names = FALSE)
+```
+</details>
+<div align="right"><a href='#inhoud'>inhoud</a></div>
+
+ ***
+
+\newpage
+
+# Data inspecteren 
 In de praktijk van het wetenschappelijk onderzoek zijn de data zoals die uit een experiment komen rollen meestal niet geschikt om direct een statistische toets op uit te voeren. Vaak moeten ze eerst worden ingelezen in R vanuit een ander format (matlab, excel, .txt etc.). Controleer altijd eerst of de waardes goed zijn ingelezen. Het kan zijn dat de data eerst moet worden opgeschoond. Dat wil zeggen, je moet controleren of de gemeten waardes wel binnen een plausibel bereik vallen, dus geen onmogelijke of onwaarschijnlijke waardes bevatten. Het kan ook gebeuren dat een proefdier of proefpersoon niet altijd de taak uitvoert zoals bedoeld en er een deel van de data ontbreekt. Dan is het belangrijk in beeld te brengen hoe vaak en wanneer dat gebeurt, en deze metingen weg te laten uit de analyse, of eventueel zelf alle metingen van betreffende proefdier / -persoon weg te laten.
 
 Daarnaast werken sommige functies alleen correct wanneer de data van het juiste type zijn (bv. *numeric, character, factor*) en dat kun je niet altijd duidelijk zien op het eerste oog (b.v.: een "5" kan door R als *character*worden gezien, en niet als een nummer waar je mee kunt rekenen). Wat ook mis kan gaan is wanneer je condities of proefpersonen aanduidt met nummers en R die getallen gebruikt om mee te rekenen i.p.v. deze te gebruiken om te weten bij welk proefobject  / welke conditie een meetwaarde hoort. Het beste is om categorische data aan te duiden met letters. Gebruik bijvoorbeeld "S1","S2", .. i.p.v. "1","2",.. om proefobjecten aan te duiden, of "Conditie 1", "Conditie 2" i.p.v. "1","2" (nog beter is om informatieve namen te gebruiken zoals: "Control", "LowDose","HighDose").   
@@ -119,10 +182,7 @@ Ten slotte moeten de data ook op de juiste manier gestructureerd zijn, wat kan v
 
 ***
 
-\subsection{Foutieve data opsporen} 
-<a name="Foutieve_data"></a> 
-
-### Foutieve data opsporen
+## Foutieve data opsporen
 Er bestaan vele manieren om ontbrekende en foutieve data op te sporen in je dataset. In deze handleiding bespreken we het gebruik van de  volgende functies:
 ```{r, eval=FALSE}
 Which()
@@ -133,10 +193,7 @@ complete.cases()
 De functie *which()* wordt gebruikt in combinatie met de andere functies om de positie op te vragen waar bepaalde waardes zich bevinden i.p.v. de waardes zelf.
 <div align="right"><a href='#inhoud'>inhoud</a></div>
 
-\subsubsection{Ontbrekende data} 
-<a name="Ontbrekende_data"></a>
-
-#### Ontbrekende data
+### Ontbrekende data
 <p> *is.nan()*  
 In R worden ontbrekende waardes weergegeven als *NaN* (Not A Number) of *NA* (Not Available). Om deze op te sporen kun je de functies *is.na()* en *is.nan()* gebruiken.  
 Om de ontbrekende waardes in de dataset te vinden gebruiken we ..
@@ -174,20 +231,16 @@ Andersom kun je door het symbool **!** voor de functie *complete.cases()* te zet
 ```
 </p>
 <div align="right"><a href='#inhoud'>inhoud</a></div>
-<a name="Dubbele_data"></a>  
 
-#### Dubbel ingevoerde data
-\subsubsection{Dubbel ingevoerde data} 
+### Dubbel ingevoerde data
 *duplicated()*  
 Deze functie  controleert of er data dubbel voorkomt in het dataframe. Deze functie vergelijkt hele rijen met elkaar, dus niet of een waarde meerdere keren voorkomt binnen een kolom.
 ```{r, echo=TRUE}
 (dupRows = which(duplicated(data.bad)))
 ```
 <div align="right"><a href='#inhoud'>inhoud</a></div>  
-\subsubsection{Extreme of foutieve waardes} 
-<a name="Extreme_data"></a>  
 
-#### Extreme of foutieve waardes 
+### Extreme of foutieve waardes 
 Soms komt het voor dat er foutieve waardes in je dataset terecht komen, of je wilt een subset van waardes selecteren om mee verder te werken. Stel dat in deze dataset alleen scores van 1 t/m 20 mogelijk zijn dan kan je alsvolgt controleren of er waardes zijn die daar buiten vallen en welke dat zijn:
 ```{r}
 minScore = 1
@@ -201,10 +254,8 @@ Wederom kan je de functie *which()* gebruiken om op te vragen welke waardes dat 
 <div align="right"><a href='#inhoud'>inhoud</a></div>
 ***
 \newpage
-\subsection{Data types controleren}
-<a name="Data_types"></a>  
 
-### Data types controleren
+## Data types controleren
 R ken verschillende soorten data types zoals o.a. *numeric* (numerieke waardes) *character* (tekst), *logical* (TRUE / FALSE) en *factor* (categorische waardes). Als de data niet als het juiste type is opgeslagen in R zullen de functies een error geven, of (nog gevaarlijker) een verkeerde output geven. Raadpleeg altijd de help-files van de functies voor welk data type ze als input verwachten.  
     
 Functies om het datateyp te **controleren**:  
@@ -253,10 +304,8 @@ In bovenstaand voorbeeld zijn de condities gecodeerd met 1 t/m 3. De cijfers 1 t
 ```{r, echo=FALSE}
 tempData = data.bad
 ```
-\section{Data opschonen}
-<a name="Data_opschonen"></a> 
 
-## Data opschonen
+# Data opschonen
 
 Hiervoor hebben we besproken hoe je foutieve en ontbrekende data kunt opsporen. De volgende stap is om je dataset op te schonen. Je kunt dit op 2 manieren doen: 1) een-voor-een verschillende soorten foutieve data opsporen en verwijderen, of 2) alle soorten foutieve data opsporen en die in een keer verwijderen. Hieronder twee goede voorbeelden van code om data op te schonen, en een veelvoorkomende foute manier.
 
@@ -336,99 +385,5 @@ Hier zie je dat de NAs wel uit de dataset zijn verwijderd, maar er zitten nog we
 <div align="right"><a href='#inhoud'>inhoud</a></div>
 ***
 
-\newpage
-\section{Herstructureren van data}  
 
-<a name="Herstructureren"></a>  
-
-## Herstructureren van data 
-
-<a name="Datastructuren"></a>  
-
-### Datastructuren: wide vs. long format  
-\subsubsection{Datastructuren: wide vs. long format}  
-Wanneer je alle data hebt opgeschoond en gecontroleerd kan het nog zijn dat de dataset niet de juiste *structuur* heeft.
-Met structuur bedoelen we hier hoe de onafhankelijk en afhankelijke variabelen en de subjectnummers etc. zijn ingedeeld. Er wordt een onderscheid gemaakt tussen het **LONG** en **WIDE** format. 
-
-\textbf{WIDE FORMAT}
-**WIDE FORMAT**  
-Wanneer een proefobject meermaals is gemeten en alle meetwaarden (afhankelijke variabelen) van de verschillende condities naast elkaar in aparte kolommen staan (dus 1 rij per proefobject) spreken we van een **WIDE** format. 
-<details><summary><span style="color:dodgerBlue"> show example </span></summary>
-```{r, echo=FALSE}
-print(data.wide, digits = 3, print.gap = 5, row.names = FALSE)
-```
-</details>
-
-\textbf{LONG FORMAT}
-**LONG FORMAT**  
-Bij dit format staan alle meetwaarden van de verschillende condities in dezelfde kolom, met daarnaast een kolom die aanduid bij welke conditie iedere meetwaarde hoort, en een kolom die aanduid van welk proefobject de meetwaarde afkomstig is zoals geillustreerd in Fig X. 
-<details><summary><span style="color:dodgerBlue">show example</span></summary>
-```{r, echo=FALSE}
-print(data.long, digits = 3, print.gap = 5, row.names = FALSE)
-```
-</details>
-<div align="right"><a href='#inhoud'>inhoud</a></div>
-***
-
-\newpage
-\subsubsection{Van wide naar long}
-<a name="wide2long"></a> 
-
-### Van wide naar long 
-
-Stel je hebt `r nrofsubs` proefobjecten gemeten in `r nrofconds` verschillende condities je data staan in het WIDE format:
-```{r, echo=FALSE}
-print(data.wide, digits = 3, print.gap = 5, row.names = FALSE)
-```
-Code om data van WIDE format om te zetten naar LONG format: 
-```{r, echo= TRUE}
-# transform data from wide to long format ----
-data.long =                               
-    reshape(data        = data.wide       # naam van de oude dataset in het WIDE format
-            ,direction  = 'long'          # richting van de data-transformatie
-            ,varying    = c('A','B','C')  # kolomnamen die worden samengevoegd
-            ,idvar      = 'subj'          # kolomnaam met de ppn-nummers
-            ,v.names    = 'score'         # naam van nieuwe kolom met meetwaarden
-            ,timevar    = 'time'          # naam van nieuwe kolom met condities
-            ,times      = c('A','B','C')  # waardes 
-    )
-```
-
-Resultaat:
-```{r, echo=FALSE}
-print(data.long, digits = 3, print.gap = 5, row.names = FALSE)
-```
-<div align="right"><a href='#inhoud'>inhoud</a></div>
-***
-\newpage
-\subsubsection{Van long naar wide}
-
-<a name="long2wide"></a>   
-
-### Van long naar wide  
-
-Stel je hebt `r nrofsubs` proefobjecten gemeten in `r nrofconds` verschillende condities je data staan in het LONG format:
-```{r, echo=FALSE}
-print(data.long, digits = 3, print.gap = 5, row.names = FALSE)
-```
-
-Code om data van LONG format om te zetten naar WIDE format: 
-
-```{r, echo= TRUE}
-# transform data from long to wide format ---- 
-data.wide =   
-reshape(data          = data.long      # naam van de oude dataset
-          ,direction  = 'wide'         # richting van de data-transformatie
-          ,v.names    = 'score'        # kolomnaam met de meetwaarden
-          ,timevar    = 'time'         # kolomnaam met de conditienamen
-          ,idvar      = 'subj'         # kolomnaam met de ppn-nummers
-  )        
-names(data.wide)[2:4] = c('A','B','C') # pas de kolomnamen met scores aan
-```
-Resultaat:
-```{r, echo=FALSE}
-print(data.wide, digits = 3, print.gap = 5, row.names = FALSE)
-```
-</details>
-<div align="right"><a href='#inhoud'>inhoud</a></div>
 
