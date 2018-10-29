@@ -40,7 +40,7 @@ score = as.vector( replicate(
           nrofconds , rnorm(n = nrofsubs, mean = sample(8,1)+10 , sd = sample(5,1) ) 
         ) )                                     # create array with measurement values
 data.long = data.frame(subj, time, score);      # combine arrays into a data.frame
-rm(list=setdiff(ls(), c("data.long", "nrofsubs","nrofconds"))) # delete arrays
+rm(list=c("nrofconds","nrofsubs","score","subj","time")) # delete arrays
 
 
 # transform data from long to wide format ---- 
