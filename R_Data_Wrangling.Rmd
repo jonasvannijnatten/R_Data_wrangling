@@ -2,15 +2,34 @@
 title: "R - Dataverwerking"
 author: "J.J. van Nijnatten"
 output:
+  html_document:
+    number_sections: yes
+    toc: yes
+    toc_float: true
+    toc_depth: 4
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
-  html_document:
-    number_sections: yes
-    toc: yes
-    toc_depth: 4
 ---
+
+```{css, echo=FALSE}
+body .main-container{
+  max-width: 2500px;
+  width: 90%;
+  margin: auto;
+ padding: 1em;
+ line-height: 20px ; 
+}   
+
+body {
+  max-width: 2500px;
+  width: 90%;
+  margin: auto;
+ padding: 1em;
+ line-height: 20px ; 
+}   
+```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -23,6 +42,8 @@ out_type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
 contact: J.J.vanNijnatten@uva.nl
 
 broncode: https://github.com/jonasvannijnatten/R_Data_wrangling  
+
+laatste update: `r format.Date(Sys.Date(), '%d-%m-%Y')`
 
 \newpage
 
@@ -40,7 +61,7 @@ score = as.vector( replicate(
           nrofconds , rnorm(n = nrofsubs, mean = sample(8,1)+10 , sd = sample(5,1) ) 
         ) )                                     # create array with measurement values
 data.long = data.frame(subj, time, score);      # combine arrays into a data.frame
-rm(list=c("nrofconds","nrofsubs","score","subj","time")) # delete arrays
+# rm(list=c("nrofconds","nrofsubs","score","subj","time")) # delete arrays
 
 
 # transform data from long to wide format ---- 
@@ -107,7 +128,7 @@ Bij dit format staan alle meetwaarden van de verschillende condities in dezelfde
 print(data.long, digits = 3, print.gap = 5, row.names = FALSE)
 ```
 </details>
-<div align="right"><a href='#inhoud'>inhoud</a></div>
+
 ***
 
 \newpage
@@ -136,7 +157,7 @@ Resultaat:
 ```{r, echo=FALSE}
 print(data.long, digits = 3, print.gap = 5, row.names = FALSE)
 ```
-<div align="right"><a href='#inhoud'>inhoud</a></div>
+
 ***
 \newpage
 
@@ -165,7 +186,7 @@ Resultaat:
 print(data.wide, digits = 3, print.gap = 5, row.names = FALSE)
 ```
 </details>
-<div align="right"><a href='#inhoud'>inhoud</a></div>
+
 
  ***
 
@@ -178,7 +199,6 @@ Daarnaast werken sommige functies alleen correct wanneer de data van het juiste 
 
 Ten slotte moeten de data ook op de juiste manier gestructureerd zijn, wat kan verschillen per R functie. met de *reshape()* functie kan je de data binnen R herstructuren.
 
-<div align="right"><a href='#inhoud'>inhoud</a></div>
 
 ***
 
@@ -191,7 +211,7 @@ duplicated()
 complete.cases()
 ```
 De functie *which()* wordt gebruikt in combinatie met de andere functies om de positie op te vragen waar bepaalde waardes zich bevinden i.p.v. de waardes zelf.
-<div align="right"><a href='#inhoud'>inhoud</a></div>
+
 
 ### Ontbrekende data
 <p> *is.nan()*  
@@ -230,7 +250,7 @@ Andersom kun je door het symbool **!** voor de functie *complete.cases()* te zet
 (incomRows = which(!complete.cases(data.bad)))
 ```
 </p>
-<div align="right"><a href='#inhoud'>inhoud</a></div>
+
 
 ### Dubbel ingevoerde data
 *duplicated()*  
@@ -251,7 +271,7 @@ Wederom kan je de functie *which()* gebruiken om op te vragen welke waardes dat 
 ```{r}
 (extremeRows = which((data.bad$score < minScore | data.bad$score > maxScore)))
 ```
-<div align="right"><a href='#inhoud'>inhoud</a></div>
+
 ***
 \newpage
 
@@ -297,7 +317,6 @@ mean(conditions)                          # NA: met deze variabele kan R niet re
 ```
 In bovenstaand voorbeeld zijn de condities gecodeerd met 1 t/m 3. De cijfers 1 t/m 3 geven hier alleen aan tot welke conditie iets hoort, maar het getal geeft geen quantitatieve informatie. wanneer je per ongeluk de data verkeerd invoert in een functie kan R hier toch mee gaan rekenen en krijg je een onzinnige output zonder dat R een waarschuwing geeft. Door er een *factor* van te maken geef je expliciet aan dat het niet gaat om quantitatieve waardes maar om benaming. 
 
-<div align="right"><a href='#inhoud'>inhoud</a></div>
 ***
 
 \newpage
